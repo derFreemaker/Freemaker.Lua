@@ -1601,6 +1601,7 @@ __fileFuncs__["__main__"] = function()
     local parser = CliParser("bundle", "Used to bundle a file together by importing the files it uses with require")
     parser:argument("input", "Input file.")
     parser:option("-o --output", "Output file.", "out.lua")
+    parser:option("-t --type", "Output type.")
     local args = parser:parse() -- { "-o", "bin/bundle.lua", "Bundle.lua" })
     local InputFilePath = Path.new(args.input)
     if InputFilePath:IsRelative() then
@@ -1614,15 +1615,6 @@ __fileFuncs__["__main__"] = function()
     if not outFile then
         error("unable to open output: " .. args.output)
     end
-    outFile:write([[local __fileFuncs__ = {}
-    local __cache__ = {}
-    local function __loadFile__(module)
-        if not __cache__[module] then
-            __cache__[module] = { __fileFuncs__[module]() }
-        end
-        return table.unpack(__cache__[module])
-    end
-    ]])
     local bundler = {}
     function bundler.findAllRequires(text)
         ---@type { module: string, startPos: integer, endPos: integer }[]
@@ -1701,8 +1693,23 @@ __fileFuncs__["__main__"] = function()
         end
         outFile:write("end\n\n")
     end
+    print("writing...")
+    outFile:write([[local __fileFuncs__ = {}
+    local __cache__ = {}
+    local function __loadFile__(module)
+        if not __cache__[module] then
+            __cache__[module] = { __fileFuncs__[module]() }
+        end
+        return table.unpack(__cache__[module])
+    end
+    ]])
     bundler.processFile(InputFilePath, "__main__")
     outFile:write("return __loadFile__(\"" .. "__main__" .. "\")")
+    if args.type then
+        outFile:write(" --[[@as " .. args.type .. "]]")
+    end
+    outFile:write("\n")
+    outFile:close()
     print("done!")
 end
 

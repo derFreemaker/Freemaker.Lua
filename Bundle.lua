@@ -10,8 +10,9 @@ local CurrentWorkingDirectory = Path.new(FileSystem.GetCurrentWorkingDirectory()
 local parser = CliParser("bundle", "Used to bundle a file together by importing the files it uses with require")
 parser:argument("input", "Input file.")
 parser:option("-o --output", "Output file.", "out.lua")
+parser:option("-t --type", "Output type.")
 
----@type { input: string, output: string }
+---@type { input: string, output: string, type: string }
 local args = parser:parse() -- { "-o", "bin/bundle.lua", "Bundle.lua" })
 
 local InputFilePath = Path.new(args.input)
@@ -28,22 +29,6 @@ local outFile = io.open(OutputFilePath:ToString(), "w+")
 if not outFile then
     error("unable to open output: " .. args.output)
 end
-
--- Head
-----------------------------------------------------------------
-
-outFile:write([[local __fileFuncs__ = {}
-local __cache__ = {}
-local function __loadFile__(module)
-    if not __cache__[module] then
-        __cache__[module] = { __fileFuncs__[module]() }
-    end
-    return table.unpack(__cache__[module])
-end
-
-]])
-
-----------------------------------------------------------------
 
 ---@class Freemaker.Bundle.require
 ---@field module string
@@ -153,8 +138,25 @@ function bundler.processFile(path, module)
     outFile:write("end\n\n")
 end
 
+print("writing...")
+
+outFile:write([[local __fileFuncs__ = {}
+local __cache__ = {}
+local function __loadFile__(module)
+    if not __cache__[module] then
+        __cache__[module] = { __fileFuncs__[module]() }
+    end
+    return table.unpack(__cache__[module])
+end
+]])
+
 bundler.processFile(InputFilePath, "__main__")
 
 outFile:write("return __loadFile__(\"" .. "__main__" .. "\")")
+if args.type then
+    outFile:write(" --[[@as " .. args.type .. "]]")
+end
+outFile:write("\n")
 
+outFile:close()
 print("done!")
