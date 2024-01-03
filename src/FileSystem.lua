@@ -1,4 +1,4 @@
-local Utils = require("Utils")
+local Utils = require("src.Utils")
 
 ---@class Freemaker.FileSystem
 local FileSystem = {}

@@ -1,12 +1,12 @@
 local __fileFuncs__ = {}
-    local __cache__ = {}
-    local function __loadFile__(module)
-        if not __cache__[module] then
-            __cache__[module] = { __fileFuncs__[module]() }
-        end
-        return table.unpack(__cache__[module])
+local __cache__ = {}
+local function __loadFile__(module)
+    if not __cache__[module] then
+        __cache__[module] = { __fileFuncs__[module]() }
     end
-    __fileFuncs__["CLIParser"] = function()
+    return table.unpack(__cache__[module])
+end
+__fileFuncs__["src.CLIParser"] = function()
     local function deep_update(t1, t2)
        for k, v in pairs(t2) do
           if type(v) == "table" then
@@ -1205,7 +1205,7 @@ local __fileFuncs__ = {}
     return argparse
 end
 
-__fileFuncs__["Utils.String"] = function()
+__fileFuncs__["src.Utils.String"] = function()
     local String = {}
     local function findNext(str, pattern, plain)
         local found = str:find(pattern, 0, plain or false)
@@ -1259,7 +1259,7 @@ __fileFuncs__["Utils.String"] = function()
     return String
 end
 
-__fileFuncs__["Utils.Table"] = function()
+__fileFuncs__["src.Utils.Table"] = function()
     local Table = {}
     local function copyTable(obj, copy, seen)
         if obj == nil then return nil end
@@ -1334,15 +1334,29 @@ __fileFuncs__["Utils.Table"] = function()
     return Table
 end
 
-__fileFuncs__["Utils"] = function()
+__fileFuncs__["src.Utils.Value"] = function()
+    local Table = __loadFile__("src.Utils.Table")
+    local Value = {}
+    function Value.Copy(value)
+        local typeStr = type(value)
+        if typeStr == "table" then
+            return Table.Copy(value)
+        end
+        return value
+    end
+    return Value
+end
+
+__fileFuncs__["src.Utils"] = function()
     local Utils = {}
-    Utils.String = __loadFile__("Utils.String")
-    Utils.Table = __loadFile__("Utils.Table")
+    Utils.String = __loadFile__("src.Utils.String")
+    Utils.Table = __loadFile__("src.Utils.Table")
+    Utils.Value = __loadFile__("src.Utils.Value")
     return Utils
 end
 
-__fileFuncs__["FileSystem"] = function()
-    local Utils = __loadFile__("Utils")
+__fileFuncs__["src.FileSystem"] = function()
+    local Utils = __loadFile__("src.Utils")
     local FileSystem = {}
     function FileSystem.OpenFile(path, mode)
     	return io.open(path, mode)
@@ -1416,9 +1430,9 @@ __fileFuncs__["FileSystem"] = function()
     return FileSystem
 end
 
-__fileFuncs__["Path"] = function()
-    local Utils = __loadFile__("Utils")
-    local FileSystem = __loadFile__("FileSystem")
+__fileFuncs__["src.Path"] = function()
+    local Utils = __loadFile__("src.Utils")
+    local FileSystem = __loadFile__("src.FileSystem")
     local function formatStr(str)
         str = str:gsub("\\", "/")
         return str
@@ -1591,10 +1605,10 @@ __fileFuncs__["Path"] = function()
 end
 
 __fileFuncs__["__main__"] = function()
-    local CliParser = __loadFile__("CLIParser")
-    local FileSystem = __loadFile__("FileSystem")
-    local Utils = __loadFile__("Utils")
-    local Path = __loadFile__("Path")
+    local CliParser = __loadFile__("src.CLIParser")
+    local FileSystem = __loadFile__("src.FileSystem")
+    local Utils = __loadFile__("src.Utils")
+    local Path = __loadFile__("src.Path")
     local CurrentDirectory = Path.new(FileSystem.GetCurrentDirectory())
     local RootDirectory = CurrentDirectory:Extend(".."):Normalize()
     local CurrentWorkingDirectory = Path.new(FileSystem.GetCurrentWorkingDirectory())
@@ -1704,7 +1718,7 @@ __fileFuncs__["__main__"] = function()
     end
     ]])
     bundler.processFile(InputFilePath, "__main__")
-    outFile:write("return __loadFile__(\"" .. "__main__" .. "\")")
+    outFile:write("return __fileFuncs__[\"" .. "__main__" .. "\"]()")
     if args.type then
         outFile:write(" --[[@as " .. args.type .. "]]")
     end
@@ -1713,4 +1727,4 @@ __fileFuncs__["__main__"] = function()
     print("done!")
 end
 
-return __loadFile__("__main__")
+return __fileFuncs__["__main__"]()

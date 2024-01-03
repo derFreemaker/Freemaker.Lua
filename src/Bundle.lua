@@ -1,7 +1,7 @@
-local CliParser = require("CLIParser")
-local FileSystem = require("FileSystem")
-local Utils = require("Utils")
-local Path = require("Path")
+local CliParser = require("src.CLIParser")
+local FileSystem = require("src.FileSystem")
+local Utils = require("src.Utils")
+local Path = require("src.Path")
 
 local CurrentDirectory = Path.new(FileSystem.GetCurrentDirectory())
 local RootDirectory = CurrentDirectory:Extend(".."):Normalize()
@@ -152,7 +152,7 @@ end
 
 bundler.processFile(InputFilePath, "__main__")
 
-outFile:write("return __loadFile__(\"" .. "__main__" .. "\")")
+outFile:write("return __fileFuncs__[\"" .. "__main__" .. "\"]()")
 if args.type then
     outFile:write(" --[[@as " .. args.type .. "]]")
 end

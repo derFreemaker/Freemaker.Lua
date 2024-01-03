@@ -1,6 +1,6 @@
-local Table = require("Utils.Table")
+local Table = require("src.Utils.Table")
 
----@class Utils.Value
+---@class Freemaker.Utils.Value
 local Value = {}
 
 ---@generic T
