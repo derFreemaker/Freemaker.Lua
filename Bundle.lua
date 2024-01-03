@@ -12,7 +12,7 @@ parser:argument("input", "Input file.")
 parser:option("-o --output", "Output file.", "out.lua")
 
 ---@type { input: string, output: string }
-local args = parser:parse()
+local args = parser:parse() -- { "-o", "bin/bundle.lua", "Bundle.lua" })
 
 local InputFilePath = Path.new(args.input)
 if InputFilePath:IsRelative() then
@@ -139,9 +139,16 @@ function bundler.processFile(path, module)
     outFile:write("__fileFuncs__[\"" .. module .. "\"] = function()\n")
     local lines = Utils.String.Split(text, "\n", false)
     for _, line in pairs(lines) do
-        if line ~= "" then
-            outFile:write("    " .. line .. "\n")
+        if line:find("--", nil, true) == 1 then
+            goto continue
         end
+
+        if not line:find("%S") then
+            goto continue
+        end
+
+        outFile:write("    " .. line .. "\n")
+        ::continue::
     end
     outFile:write("end\n\n")
 end

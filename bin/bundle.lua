@@ -1,29 +1,12 @@
 local __fileFuncs__ = {}
-local __cache__ = {}
-local function __loadFile__(module)
-    if not __cache__[module] then
-        __cache__[module] = { __fileFuncs__[module]() }
+    local __cache__ = {}
+    local function __loadFile__(module)
+        if not __cache__[module] then
+            __cache__[module] = { __fileFuncs__[module]() }
+        end
+        return table.unpack(__cache__[module])
     end
-    return table.unpack(__cache__[module])
-end
-
-__fileFuncs__["CLIParser"] = function()
-    -- The MIT License (MIT)
-    -- Copyright (c) 2013 - 2018 Peter Melnichenko
-    -- Permission is hereby granted, free of charge, to any person obtaining a copy of
-    -- this software and associated documentation files (the "Software"), to deal in
-    -- the Software without restriction, including without limitation the rights to
-    -- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-    -- the Software, and to permit persons to whom the Software is furnished to do so,
-    -- subject to the following conditions:
-    -- The above copyright notice and this permission notice shall be included in all
-    -- copies or substantial portions of the Software.
-    -- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    -- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-    -- FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-    -- COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-    -- IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-    -- CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    __fileFuncs__["CLIParser"] = function()
     local function deep_update(t1, t2)
        for k, v in pairs(t2) do
           if type(v) == "table" then
@@ -33,9 +16,6 @@ __fileFuncs__["CLIParser"] = function()
        end
        return t1
     end
-    -- A property is a tuple {name, callback}.
-    -- properties.args is number of properties that can be set as arguments
-    -- when calling an object.
     local function class(prototype, properties, parent)
        -- Class is the metatable of its instances.
        local cl = {}
@@ -381,7 +361,6 @@ __fileFuncs__["CLIParser"] = function()
        end
        return action, init
     end
-    -- Returns placeholder for `narg`-th argument.
     function Argument:_get_argname(narg)
        local argname = self._argname or self:_get_default_argname()
        if type(argname) == "table" then
@@ -396,7 +375,6 @@ __fileFuncs__["CLIParser"] = function()
     function Option:_get_default_argname()
        return "<" .. self:_get_default_target() .. ">"
     end
-    -- Returns labels to be shown in the help message.
     function Argument:_get_label_lines()
        return { self._name }
     end
@@ -698,9 +676,6 @@ __fileFuncs__["CLIParser"] = function()
        end
        return result_lines
     end
-    -- Automatically wraps lines within given array,
-    -- attempting to limit line length to `max_length`.
-    -- Existing line splits are preserved.
     local function autowrap(lines, max_length)
        local result_lines = {}
        for _, line in ipairs(lines) do
@@ -1194,7 +1169,6 @@ __fileFuncs__["CLIParser"] = function()
        io.stderr:write(("%s\n\nError: %s\n"):format(self:get_usage(), msg))
        os.exit(1)
     end
-    -- Compatibility with strict.lua and other checkers:
     local default_cmdline = rawget(_G, "arg") or {}
     function Parser:_parse(args, error_handler)
        return ParseState(self, error_handler):parse(args or default_cmdline)
@@ -1232,12 +1206,7 @@ __fileFuncs__["CLIParser"] = function()
 end
 
 __fileFuncs__["Utils.String"] = function()
-    ---@class Freemaker.Utils.String
     local String = {}
-    ---@param str string
-    ---@param pattern string
-    ---@param plain boolean?
-    ---@return string?, integer
     local function findNext(str, pattern, plain)
         local found = str:find(pattern, 0, plain or false)
         if found == nil then
@@ -1245,10 +1214,6 @@ __fileFuncs__["Utils.String"] = function()
         end
         return str:sub(0, found - 1), found - 1
     end
-    ---@param str string?
-    ---@param sep string?
-    ---@param plain boolean?
-    ---@return string[]
     function String.Split(str, sep, plain)
         if str == nil then
             return {}
@@ -1274,8 +1239,6 @@ __fileFuncs__["Utils.String"] = function()
             str = str:sub(foundPos + sepLen + 1, strLen)
         end
     end
-    ---@param str string?
-    ---@return boolean
     function String.IsNilOrEmpty(str)
         if str == nil then
             return true
@@ -1285,9 +1248,6 @@ __fileFuncs__["Utils.String"] = function()
         end
         return false
     end
-    ---@param array string[]
-    ---@param sep string
-    ---@return string
     function String.Join(array, sep)
         local str = ""
         str = array[1]
@@ -1300,11 +1260,7 @@ __fileFuncs__["Utils.String"] = function()
 end
 
 __fileFuncs__["Utils.Table"] = function()
-    ---@class Freemaker.Utils.Table
     local Table = {}
-    ---@param obj table?
-    ---@param seen table[]
-    ---@return table?
     local function copyTable(obj, copy, seen)
         if obj == nil then return nil end
         if seen[obj] then return seen[obj] end
@@ -1317,19 +1273,12 @@ __fileFuncs__["Utils.Table"] = function()
         end
         return copy
     end
-    ---@generic TTable
-    ---@param t TTable
-    ---@return TTable table
     function Table.Copy(t)
         return copyTable(t, {}, {})
     end
-    ---@param from table
-    ---@param to table
     function Table.CopyTo(from, to)
         copyTable(from, to, {})
     end
-    ---@param t table
-    ---@param ignoreProperties string[]?
     function Table.Clear(t, ignoreProperties)
         if not ignoreProperties then
             ignoreProperties = {}
@@ -1341,9 +1290,6 @@ __fileFuncs__["Utils.Table"] = function()
         end
         setmetatable(t, nil)
     end
-    ---@param t table
-    ---@param value any
-    ---@return boolean
     function Table.Contains(t, value)
         for _, tValue in pairs(t) do
             if value == tValue then
@@ -1352,17 +1298,12 @@ __fileFuncs__["Utils.Table"] = function()
         end
         return false
     end
-    ---@param t table
-    ---@param key any
-    ---@return boolean
     function Table.ContainsKey(t, key)
         if t[key] ~= nil then
             return true
         end
         return false
     end
-    --- removes all spaces between
-    ---@param t any[]
     function Table.Clean(t)
         for key, value in pairs(t) do
             for i = key - 1, 1, -1 do
@@ -1376,8 +1317,6 @@ __fileFuncs__["Utils.Table"] = function()
             end
         end
     end
-    ---@param t table
-    ---@return integer count
     function Table.Count(t)
         local count = 0
         for _, _ in next, t, nil do
@@ -1385,8 +1324,6 @@ __fileFuncs__["Utils.Table"] = function()
         end
         return count
     end
-    ---@param t table
-    ---@return table
     function Table.Invert(t)
         local inverted = {}
         for key, value in pairs(t) do
@@ -1398,7 +1335,6 @@ __fileFuncs__["Utils.Table"] = function()
 end
 
 __fileFuncs__["Utils"] = function()
-    ---@class Freemaker.Utils
     local Utils = {}
     Utils.String = __loadFile__("Utils.String")
     Utils.Table = __loadFile__("Utils.Table")
@@ -1407,15 +1343,10 @@ end
 
 __fileFuncs__["FileSystem"] = function()
     local Utils = __loadFile__("Utils")
-    ---@class Freemaker.FileSystem
     local FileSystem = {}
-    ---@param path string
-    ---@param mode openmode
-    ---@return file*?
     function FileSystem.OpenFile(path, mode)
     	return io.open(path, mode)
     end
-    ---@return string
     function FileSystem.GetCurrentDirectory()
     	local source = debug.getinfo(2, 'S').source:gsub('\\', '/'):gsub('@', '')
     	local slashPos = source:reverse():find('/')
@@ -1426,7 +1357,6 @@ __fileFuncs__["FileSystem"] = function()
     	local currentPath = source:sub(0, length - slashPos)
     	return currentPath
     end
-    ---@return string
     function FileSystem.GetCurrentWorkingDirectory()
     	local cmd = io.popen("cd")
     	if not cmd then
@@ -1441,8 +1371,6 @@ __fileFuncs__["FileSystem"] = function()
     	cmd:close()
     	return path
     end
-    ---@param path string
-    ---@return string[]
     function FileSystem.GetDirectories(path)
     	local command = 'dir "' .. path .. '" /ad /b'
     	local result = io.popen(command)
@@ -1456,8 +1384,6 @@ __fileFuncs__["FileSystem"] = function()
     	end
     	return children
     end
-    ---@param path string
-    ---@return string[]
     function FileSystem.GetFiles(path)
     	local command = 'dir "' .. path .. '" /a-d /b'
     	local result = io.popen(command)
@@ -1471,14 +1397,10 @@ __fileFuncs__["FileSystem"] = function()
     	end
     	return children
     end
-    ---@param path string
-    ---@return boolean
     function FileSystem.CreateFolder(path)
     	local success = os.execute("mkdir \"" .. path .. "\"")
     	return success or false
     end
-    ---@param path string
-    ---@return boolean
     function FileSystem.CreateFile(path)
     	local file = FileSystem.OpenFile(path, "w")
     	if not file then
@@ -1488,8 +1410,6 @@ __fileFuncs__["FileSystem"] = function()
     	file:close()
     	return true
     end
-    ---@param path string
-    ---@return boolean
     function FileSystem.Exists(path)
     	return os.rename(path, path)
     end
@@ -1499,26 +1419,17 @@ end
 __fileFuncs__["Path"] = function()
     local Utils = __loadFile__("Utils")
     local FileSystem = __loadFile__("FileSystem")
-    ---@param str string
-    ---@return string str
     local function formatStr(str)
         str = str:gsub("\\", "/")
         return str
     end
-    ---@class Freemaker.FileSystem.Path
-    ---@field private m_nodes string[]
     local Path = {}
-    ---@param str string
-    ---@return boolean isNode
     function Path.IsNode(str)
         if str:find("/") then
             return false
         end
         return true
     end
-    ---@package
-    ---@param pathOrNodes string | string[]
-    ---@return Freemaker.FileSystem.Path
     function Path.new(pathOrNodes)
         local instance = {}
         if not pathOrNodes then
@@ -1538,27 +1449,22 @@ __fileFuncs__["Path"] = function()
         instance = setmetatable(instance, { __index = Path })
         return instance
     end
-    ---@return string path
     function Path:ToString()
         self:Normalize()
         return Utils.String.Join(self.m_nodes, "/")
     end
-    ---@return boolean
     function Path:IsEmpty()
         return #self.m_nodes == 0 or (#self.m_nodes == 2 and self.m_nodes[1] == "" and self.m_nodes[2] == "")
     end
-    ---@return boolean
     function Path:IsFile()
         return self.m_nodes[#self.m_nodes] ~= ""
     end
-    ---@return boolean
     function Path:IsDir()
         return self.m_nodes[#self.m_nodes] == ""
     end
     function Path:Exists()
         return FileSystem.Exists(self:ToString())
     end
-    ---@return boolean
     function Path:Create()
         if self:Exists() then
             return true
@@ -1570,11 +1476,9 @@ __fileFuncs__["Path"] = function()
         end
         return false
     end
-    ---@return boolean
     function Path:IsAbsolute()
         return self.m_nodes[1] == ""
     end
-    ---@return Freemaker.FileSystem.Path
     function Path:Absolute()
         local copy = Utils.Table.Copy(self.m_nodes)
         for i = 1, #copy, 1 do
@@ -1582,11 +1486,9 @@ __fileFuncs__["Path"] = function()
         end
         return Path.new(copy)
     end
-    ---@return boolean
     function Path:IsRelative()
         return self.m_nodes[1] ~= ""
     end
-    ---@return Freemaker.FileSystem.Path
     function Path:Relative()
         local copy = {}
         if self.m_nodes[1] ~= "" then
@@ -1597,7 +1499,6 @@ __fileFuncs__["Path"] = function()
         end
         return Path.new(copy)
     end
-    ---@return string
     function Path:GetParentFolder()
         local copy = Utils.Table.Copy(self.m_nodes)
         local length = #copy
@@ -1611,7 +1512,6 @@ __fileFuncs__["Path"] = function()
         end
         return Utils.String.Join(copy, "/")
     end
-    ---@return Freemaker.FileSystem.Path
     function Path:GetParentFolderPath()
         local copy = self:Copy()
         local length = #copy.m_nodes
@@ -1625,14 +1525,12 @@ __fileFuncs__["Path"] = function()
         end
         return copy
     end
-    ---@return string fileName
     function Path:GetFileName()
         if not self:IsFile() then
             error("path is not a file: " .. self:ToString())
         end
         return self.m_nodes[#self.m_nodes]
     end
-    ---@return string fileExtension
     function Path:GetFileExtension()
         if not self:IsFile() then
             error("path is not a file: " .. self:ToString())
@@ -1641,7 +1539,6 @@ __fileFuncs__["Path"] = function()
         local _, _, extension = fileName:find("^.+(%..+)$")
         return extension
     end
-    ---@return string fileStem
     function Path:GetFileStem()
         if not self:IsFile() then
             error("path is not a file: " .. self:ToString())
@@ -1650,7 +1547,6 @@ __fileFuncs__["Path"] = function()
         local _, _, stem = fileName:find("^(.+)%..+$")
         return stem
     end
-    ---@return Freemaker.FileSystem.Path
     function Path:Normalize()
         ---@type string[]
         local newNodes = {}
@@ -1674,8 +1570,6 @@ __fileFuncs__["Path"] = function()
         self.m_nodes = newNodes
         return self
     end
-    ---@param path string
-    ---@return Freemaker.FileSystem.Path
     function Path:Append(path)
         path = formatStr(path)
         local newNodes = Utils.String.Split(path, "/")
@@ -1685,13 +1579,10 @@ __fileFuncs__["Path"] = function()
         self:Normalize()
         return self
     end
-    ---@param path string
-    ---@return Freemaker.FileSystem.Path
     function Path:Extend(path)
         local copy = self:Copy()
         return copy:Append(path)
     end
-    ---@return Freemaker.FileSystem.Path
     function Path:Copy()
         local copyNodes = Utils.Table.Copy(self.m_nodes)
         return Path.new(copyNodes)
@@ -1710,8 +1601,7 @@ __fileFuncs__["__main__"] = function()
     local parser = CliParser("bundle", "Used to bundle a file together by importing the files it uses with require")
     parser:argument("input", "Input file.")
     parser:option("-o --output", "Output file.", "out.lua")
-    ---@type { input: string, output: string }
-    local args = parser:parse()
+    local args = parser:parse() -- { "-o", "bin/bundle.lua", "Bundle.lua" })
     local InputFilePath = Path.new(args.input)
     if InputFilePath:IsRelative() then
         InputFilePath = CurrentWorkingDirectory:Extend(InputFilePath:ToString())
@@ -1724,8 +1614,6 @@ __fileFuncs__["__main__"] = function()
     if not outFile then
         error("unable to open output: " .. args.output)
     end
-    -- Head
-    ----------------------------------------------------------------
     outFile:write([[local __fileFuncs__ = {}
     local __cache__ = {}
     local function __loadFile__(module)
@@ -1735,15 +1623,7 @@ __fileFuncs__["__main__"] = function()
         return table.unpack(__cache__[module])
     end
     ]])
-    ----------------------------------------------------------------
-    ---@class Freemaker.Bundle.require
-    ---@field module string
-    ---@field startPos integer
-    ---@field endPos integer
-    ---@field replace boolean
     local bundler = {}
-    ---@param text string
-    ---@return Freemaker.Bundle.require[]
     function bundler.findAllRequires(text)
         ---@type { module: string, startPos: integer, endPos: integer }[]
         local requires = {}
@@ -1762,9 +1642,6 @@ __fileFuncs__["__main__"] = function()
         end
         return requires
     end
-    ---@param requires Freemaker.Bundle.require[]
-    ---@param text string
-    ---@return string text
     function bundler.replaceRequires(requires, text)
         local diff = 0
         for _, require in pairs(requires) do
@@ -1776,7 +1653,6 @@ __fileFuncs__["__main__"] = function()
         return text
     end
     local cache = {}
-    ---@param requires Freemaker.Bundle.require[]
     function bundler.processRequires(requires)
         for _, require in pairs(requires) do
             ---@type string[]
@@ -1797,8 +1673,6 @@ __fileFuncs__["__main__"] = function()
             ::continue::
         end
     end
-    ---@param path Freemaker.FileSystem.Path
-    ---@param module string
     function bundler.processFile(path, module)
         if cache[module] then
             return cache[module]
@@ -1816,9 +1690,14 @@ __fileFuncs__["__main__"] = function()
         outFile:write("__fileFuncs__[\"" .. module .. "\"] = function()\n")
         local lines = Utils.String.Split(text, "\n", false)
         for _, line in pairs(lines) do
-            if line ~= "" then
-                outFile:write("    " .. line .. "\n")
+            if line:find("--", nil, true) == 1 then
+                goto continue
             end
+            if not line:find("%S") then
+                goto continue
+            end
+            outFile:write("    " .. line .. "\n")
+            ::continue::
         end
         outFile:write("end\n\n")
     end
