@@ -80,4 +80,6 @@ local __fileFuncs__ = {}
     return FileSystem
 end
 
-return __fileFuncs__["__main__"]() --[[@as Freemaker.FileSystem]]
+---@type Freemaker.FileSystem
+local main = __fileFuncs__["__main__"]()
+return main

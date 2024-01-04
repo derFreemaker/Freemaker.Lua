@@ -1615,7 +1615,7 @@ __fileFuncs__["__main__"] = function()
     parser:argument("input", "Input file.")
     parser:option("-o --output", "Output file.", "out.lua")
     parser:option("-t --type", "Output type.")
-    local args = parser:parse() -- { "-o", "bin/bundle.lua", "Bundle.lua" })
+    local args = parser:parse() -- { "-o", "bin/bundle.lua", "src/Bundle.lua" })
     local InputFilePath = Path.new(args.input)
     if InputFilePath:IsRelative() then
         InputFilePath = CurrentWorkingDirectory:Extend(InputFilePath:ToString())
@@ -1641,7 +1641,15 @@ __fileFuncs__["__main__"] = function()
             if startPos == nil then
                 break
             end
-            table.insert(requires, { startPos = startPos, endPos = endPos, module = match })
+            local textPart = text:sub(0, startPos):reverse()
+            local newLinePos = textPart:find("\n")
+            local comment = textPart:find("--", nil, true)
+            if not (newLinePos and comment and comment < newLinePos) then
+                ---@type Freemaker.Bundle.require
+                ---@diagnostic disable-next-line: assign-type-mismatch
+                local data = { startPos = startPos, endPos = endPos, module = match, replace = true }
+                table.insert(requires, data)
+            end
             ---@diagnostic disable-next-line: cast-local-type
             currentPos = endPos
         end
@@ -1650,10 +1658,14 @@ __fileFuncs__["__main__"] = function()
     function bundler.replaceRequires(requires, text)
         local diff = 0
         for _, require in pairs(requires) do
+            if not require.replace then
+                goto continue
+            end
             local front = text:sub(0, require.startPos + diff - 1)
             local back = text:sub(require.endPos + diff + 1)
             text = front .. "__loadFile__(\"" .. require.module .. "\")" .. back
             diff = diff + 5
+            ::continue::
         end
         return text
     end
@@ -1717,11 +1729,13 @@ __fileFuncs__["__main__"] = function()
     end
     ]])
     bundler.processFile(InputFilePath, "__main__")
-    outFile:write("local main = __fileFuncs__[\"" .. "__main__" .. "\"]()")
     if args.type then
-        outFile:write(" ---@type " .. args.type .. "\n")
+        outFile:write("---@type " .. args.type .. "\n")
+        outFile:write("local main = __fileFuncs__[\"" .. "__main__" .. "\"]()\n")
+        outFile:write("return main\n")
+    else
+        outFile:write("return __fileFuncs__[\"" .. "__main__" .. "\"]()\n")
     end
-    outFile:write("return main\n")
     outFile:close()
     print("done!")
 end

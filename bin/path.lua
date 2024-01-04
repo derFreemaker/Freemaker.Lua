@@ -157,7 +157,6 @@ __fileFuncs__["src.Utils"] = function()
 end
 
 __fileFuncs__["src.FileSystem"] = function()
-    local Utils = __loadFile__("src.Utils")
     local FileSystem = {}
     function FileSystem.OpenFile(path, mode)
     	return io.open(path, mode)
@@ -405,4 +404,6 @@ __fileFuncs__["__main__"] = function()
     return Path
 end
 
-return __fileFuncs__["__main__"]() --[[@as Freemaker.FileSystem.Path]]
+---@type Freemaker.FileSystem.Path
+local main = __fileFuncs__["__main__"]()
+return main

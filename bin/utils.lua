@@ -156,4 +156,6 @@ __fileFuncs__["__main__"] = function()
     return Utils
 end
 
-return __fileFuncs__["__main__"]() --[[@as Freemaker.Utils]]
+---@type Freemaker.Utils
+local main = __fileFuncs__["__main__"]()
+return main
