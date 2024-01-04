@@ -152,11 +152,11 @@ end
 
 bundler.processFile(InputFilePath, "__main__")
 
-outFile:write("return __fileFuncs__[\"" .. "__main__" .. "\"]()")
+outFile:write("local main = __fileFuncs__[\"" .. "__main__" .. "\"]()")
 if args.type then
-    outFile:write(" --[[@as " .. args.type .. "]]")
+    outFile:write(" ---@type " .. args.type .. "\n")
 end
-outFile:write("\n")
+outFile:write("return main\n")
 
 outFile:close()
 print("done!")
