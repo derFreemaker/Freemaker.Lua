@@ -248,7 +248,7 @@ __fileFuncs__["__main__"] = function()
         local instance = {}
         if not pathOrNodes then
             instance.m_nodes = {}
-            return setmetatable(instance, Path)
+            return setmetatable(instance, { __index = Path })
         end
         if type(pathOrNodes) == "string" then
             pathOrNodes = formatStr(pathOrNodes)

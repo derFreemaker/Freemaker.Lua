@@ -23,13 +23,13 @@ function Path.IsNode(str)
 end
 
 ---@package
----@param pathOrNodes string | string[]
+---@param pathOrNodes string | string[] | nil
 ---@return Freemaker.FileSystem.Path
 function Path.new(pathOrNodes)
     local instance = {}
     if not pathOrNodes then
         instance.m_nodes = {}
-        return setmetatable(instance, Path)
+        return setmetatable(instance, { __index = Path })
     end
 
     if type(pathOrNodes) == "string" then
