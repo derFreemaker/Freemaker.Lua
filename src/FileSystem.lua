@@ -71,6 +71,10 @@ end
 ---@param path string
 ---@return boolean
 function FileSystem.CreateFolder(path)
+	if FileSystem.Exists(path) then
+		return true
+	end
+
 	local success = os.execute("mkdir \"" .. path .. "\"")
 	return success or false
 end
