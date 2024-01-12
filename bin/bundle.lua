@@ -1,12 +1,12 @@
 local __fileFuncs__ = {}
-local __cache__ = {}
-local function __loadFile__(module)
-    if not __cache__[module] then
-        __cache__[module] = { __fileFuncs__[module]() }
+    local __cache__ = {}
+    local function __loadFile__(module)
+        if not __cache__[module] then
+            __cache__[module] = { __fileFuncs__[module]() }
+        end
+        return table.unpack(__cache__[module])
     end
-    return table.unpack(__cache__[module])
-end
-__fileFuncs__["src.CLIParser"] = function()
+    __fileFuncs__["src.CLIParser"] = function()
     local function deep_update(t1, t2)
        for k, v in pairs(t2) do
           if type(v) == "table" then
@@ -1261,6 +1261,9 @@ __fileFuncs__["src.FileSystem"] = function()
     	return children
     end
     function FileSystem.CreateFolder(path)
+    	if FileSystem.Exists(path) then
+    		return true
+    	end
     	local success = os.execute("mkdir \"" .. path .. "\"")
     	return success or false
     end
@@ -1620,8 +1623,6 @@ __fileFuncs__["__main__"] = function()
     local FileSystem = __loadFile__("src.FileSystem")
     local Utils = __loadFile__("src.Utils")
     local Path = __loadFile__("src.Path")
-    local CurrentDirectory = Path.new(FileSystem.GetCurrentDirectory())
-    local RootDirectory = CurrentDirectory:Extend(".."):Normalize()
     local CurrentWorkingDirectory = Path.new(FileSystem.GetCurrentWorkingDirectory())
     local parser = CliParser("bundle", "Used to bundle a file together by importing the files it uses with require")
     parser:argument("input", "Input file.")
@@ -1686,19 +1687,21 @@ __fileFuncs__["__main__"] = function()
         for _, require in pairs(requires) do
             ---@type string[]
             local records = {}
-            local requirePath = RootDirectory:Extend(require.module:gsub("%.", "\\") .. ".lua")
-            if not requirePath:Exists() then
-                table.insert(records, requirePath:ToString())
-                requirePath = RootDirectory:Extend(require.module:gsub("%.", "\\") .. "\\init.lua")
-                if not requirePath:Exists() then
-                    table.insert(records, requirePath:ToString())
-                    print("WARNING: unable to find: " .. require.module
-                        .. " with paths: \"" .. Utils.String.Join(records, "\";\"") .. "\"")
-                    require.replace = false
-                    goto continue
-                end
+            local requirePath = CurrentWorkingDirectory:Extend(require.module:gsub("%.", "\\") .. ".lua")
+            if requirePath:Exists() then
+                bundler.processFile(requirePath, require.module)
+                goto continue
             end
-            bundler.processFile(requirePath, require.module)
+            table.insert(records, requirePath:ToString())
+            requirePath = CurrentWorkingDirectory:Extend(require.module:gsub("%.", "\\") .. "\\init.lua")
+            if requirePath:Exists() then
+                bundler.processFile(requirePath, require.module)
+                goto continue
+            end
+            table.insert(records, requirePath:ToString())
+            print("WARNING: unable to find: " .. require.module
+                .. " with paths: \"" .. Utils.String.Join(records, "\";\"") .. "\"")
+            require.replace = false
             ::continue::
         end
     end

@@ -3,8 +3,6 @@ local FileSystem = require("src.FileSystem")
 local Utils = require("src.Utils")
 local Path = require("src.Path")
 
-local CurrentDirectory = Path.new(FileSystem.GetCurrentDirectory())
-local RootDirectory = CurrentDirectory:Extend(".."):Normalize()
 local CurrentWorkingDirectory = Path.new(FileSystem.GetCurrentWorkingDirectory())
 
 local parser = CliParser("bundle", "Used to bundle a file together by importing the files it uses with require")
@@ -98,20 +96,25 @@ function bundler.processRequires(requires)
     for _, require in pairs(requires) do
         ---@type string[]
         local records = {}
-        local requirePath = RootDirectory:Extend(require.module:gsub("%.", "\\") .. ".lua")
-        if not requirePath:Exists() then
-            table.insert(records, requirePath:ToString())
-            requirePath = RootDirectory:Extend(require.module:gsub("%.", "\\") .. "\\init.lua")
-            if not requirePath:Exists() then
-                table.insert(records, requirePath:ToString())
-                print("WARNING: unable to find: " .. require.module
-                    .. " with paths: \"" .. Utils.String.Join(records, "\";\"") .. "\"")
-                require.replace = false
-                goto continue
-            end
+
+        local requirePath = CurrentWorkingDirectory:Extend(require.module:gsub("%.", "\\") .. ".lua")
+        if requirePath:Exists() then
+            bundler.processFile(requirePath, require.module)
+            goto continue
         end
 
-        bundler.processFile(requirePath, require.module)
+        table.insert(records, requirePath:ToString())
+        requirePath = CurrentWorkingDirectory:Extend(require.module:gsub("%.", "\\") .. "\\init.lua")
+        if requirePath:Exists() then
+            bundler.processFile(requirePath, require.module)
+            goto continue
+        end
+
+        table.insert(records, requirePath:ToString())
+        print("WARNING: unable to find: " .. require.module
+            .. " with paths: \"" .. Utils.String.Join(records, "\";\"") .. "\"")
+        require.replace = false
+
         ::continue::
     end
 end
