@@ -7,8 +7,6 @@ local CurrentDirectory = Path.new(FileSystem.GetCurrentDirectory())
 local RootDirectory = CurrentDirectory:Extend(".."):Normalize()
 local CurrentWorkingDirectory = Path.new(FileSystem.GetCurrentWorkingDirectory())
 
--- local require = require("asdasasdasd")
-
 local parser = CliParser("bundle", "Used to bundle a file together by importing the files it uses with require")
 parser:argument("input", "Input file.")
 parser:option("-o --output", "Output file.", "out.lua")
@@ -27,9 +25,9 @@ if OutputFilePath:IsRelative() then
     OutputFilePath = CurrentWorkingDirectory:Extend(OutputFilePath:ToString())
 end
 
-local outFile = io.open(OutputFilePath:ToString(), "w+")
+local outFile = io.open(OutputFilePath:ToString(), "w")
 if not outFile then
-    error("unable to open output: " .. args.output)
+    error("unable to open output: " .. OutputFilePath:ToString())
 end
 
 ---@class Freemaker.Bundle.require

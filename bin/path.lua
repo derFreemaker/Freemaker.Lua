@@ -291,7 +291,16 @@ __fileFuncs__["__main__"] = function()
         return false
     end
     function Path:IsAbsolute()
-        return self.m_nodes[1] == ""
+        if #self.m_nodes == 0 then
+            return false
+        end
+        if self.m_nodes[1] == "" then
+            return true
+        end
+        if self.m_nodes[1]:find(":", nil, true) then
+            return true
+        end
+        return false
     end
     function Path:Absolute()
         local copy = Utils.Table.Copy(self.m_nodes)
@@ -301,7 +310,10 @@ __fileFuncs__["__main__"] = function()
         return Path.new(copy)
     end
     function Path:IsRelative()
-        return self.m_nodes[1] ~= ""
+        if #self.m_nodes == 0 then
+            return false
+        end
+        return self.m_nodes[1] ~= "" and not (self.m_nodes[1]:find(":", nil, true))
     end
     function Path:Relative()
         local copy = {}

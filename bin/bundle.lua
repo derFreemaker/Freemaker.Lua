@@ -1,12 +1,12 @@
 local __fileFuncs__ = {}
-    local __cache__ = {}
-    local function __loadFile__(module)
-        if not __cache__[module] then
-            __cache__[module] = { __fileFuncs__[module]() }
-        end
-        return table.unpack(__cache__[module])
+local __cache__ = {}
+local function __loadFile__(module)
+    if not __cache__[module] then
+        __cache__[module] = { __fileFuncs__[module]() }
     end
-    __fileFuncs__["src.CLIParser"] = function()
+    return table.unpack(__cache__[module])
+end
+__fileFuncs__["src.CLIParser"] = function()
     local function deep_update(t1, t2)
        for k, v in pairs(t2) do
           if type(v) == "table" then
@@ -1447,7 +1447,7 @@ __fileFuncs__["src.Path"] = function()
         local instance = {}
         if not pathOrNodes then
             instance.m_nodes = {}
-            return setmetatable(instance, Path)
+            return setmetatable(instance, { __index = Path })
         end
         if type(pathOrNodes) == "string" then
             pathOrNodes = formatStr(pathOrNodes)
@@ -1490,7 +1490,16 @@ __fileFuncs__["src.Path"] = function()
         return false
     end
     function Path:IsAbsolute()
-        return self.m_nodes[1] == ""
+        if #self.m_nodes == 0 then
+            return false
+        end
+        if self.m_nodes[1] == "" then
+            return true
+        end
+        if self.m_nodes[1]:find(":", nil, true) then
+            return true
+        end
+        return false
     end
     function Path:Absolute()
         local copy = Utils.Table.Copy(self.m_nodes)
@@ -1500,7 +1509,10 @@ __fileFuncs__["src.Path"] = function()
         return Path.new(copy)
     end
     function Path:IsRelative()
-        return self.m_nodes[1] ~= ""
+        if #self.m_nodes == 0 then
+            return false
+        end
+        return self.m_nodes[1] ~= "" and not (self.m_nodes[1]:find(":", nil, true))
     end
     function Path:Relative()
         local copy = {}
@@ -1624,9 +1636,9 @@ __fileFuncs__["__main__"] = function()
     if OutputFilePath:IsRelative() then
         OutputFilePath = CurrentWorkingDirectory:Extend(OutputFilePath:ToString())
     end
-    local outFile = io.open(OutputFilePath:ToString(), "w+")
+    local outFile = io.open(OutputFilePath:ToString(), "w")
     if not outFile then
-        error("unable to open output: " .. args.output)
+        error("unable to open output: " .. OutputFilePath:ToString())
     end
     local bundler = {}
     function bundler.findAllRequires(text)

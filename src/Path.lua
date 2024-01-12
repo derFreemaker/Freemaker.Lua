@@ -91,7 +91,19 @@ end
 
 ---@return boolean
 function Path:IsAbsolute()
-    return self.m_nodes[1] == ""
+    if #self.m_nodes == 0 then
+        return false
+    end
+
+    if self.m_nodes[1] == "" then
+        return true
+    end
+
+    if self.m_nodes[1]:find(":", nil, true) then
+        return true
+    end
+
+    return false
 end
 
 ---@return Freemaker.FileSystem.Path
@@ -107,7 +119,11 @@ end
 
 ---@return boolean
 function Path:IsRelative()
-    return self.m_nodes[1] ~= ""
+    if #self.m_nodes == 0 then
+        return false
+    end
+
+    return self.m_nodes[1] ~= "" and not (self.m_nodes[1]:find(":", nil, true))
 end
 
 ---@return Freemaker.FileSystem.Path
