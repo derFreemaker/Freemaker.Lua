@@ -1,5 +1,5 @@
-local Utils = require("src.Utils")
-local FileSystem = require("src.FileSystem")
+local Utils = require("src.utils")
+local FileSystem = require("src.fileSystem")
 
 ---@param str string
 ---@return string str

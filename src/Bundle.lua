@@ -1,7 +1,7 @@
-local CliParser = require("src.CLIParser")
-local FileSystem = require("src.FileSystem")
-local Utils = require("src.Utils")
-local Path = require("src.Path")
+local CliParser = require("src.cliParser")
+local FileSystem = require("src.fileSystem")
+local Utils = require("src.utils")
+local Path = require("src.path")
 
 local CurrentWorkingDirectory = Path.new(FileSystem.GetCurrentWorkingDirectory())
 
@@ -9,8 +9,10 @@ local parser = CliParser("bundle", "Used to bundle a file together by importing 
 parser:argument("input", "Input file.")
 parser:option("-o --output", "Output file.", "out.lua")
 parser:option("-t --type", "Output type.")
+parser:option("-c --comments", "remove comments (does not remove all comments)", false)
+parser:option("-l --lines", "remove empty lines", false)
 
----@type { input: string, output: string, type: string? }
+---@type { input: string, output: string, type: string?, comments: boolean, lines: boolean }
 local args = parser:parse() -- { "-o", "bin/bundle.lua", "src/Bundle.lua" })
 
 local InputFilePath = Path.new(args.input)
@@ -142,12 +144,16 @@ function bundler.processFile(path, module)
     outFile:write("__fileFuncs__[\"" .. module .. "\"] = function()\n")
     local lines = Utils.String.Split(text, "\n", false)
     for _, line in pairs(lines) do
-        if line:find("--", nil, true) == 1 then
-            goto continue
+        if args.comments then
+            if line:find("%s*%-%-") == 1 then
+                goto continue
+            end
         end
 
-        if not line:find("%S") then
-            goto continue
+        if args.lines then
+            if not line:find("%S") then
+                goto continue
+            end
         end
 
         outFile:write("    " .. line .. "\n")

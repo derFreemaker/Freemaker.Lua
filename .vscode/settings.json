@@ -1,0 +1,14 @@
+{
+	"Lua.workspace.ignoreDir": [".vscode", "bin"],
+	"files.exclude": {
+		"**/.git": true,
+		"**/.svn": true,
+		"**/.hg": true,
+		"**/CVS": true,
+		"**/.DS_Store": true,
+		"**/Thumbs.db": true,
+		".stfolder": true,
+		".stignore": true,
+		"LICENSE": true
+	}
+}

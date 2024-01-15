@@ -7,10 +7,17 @@ local __fileFuncs__ = {}
         return table.unpack(__cache__[module])
     end
     __fileFuncs__["__main__"] = function()
+    ---@class Freemaker.FileSystem
     local FileSystem = {}
+    
+    ---@param path string
+    ---@param mode openmode
+    ---@return file*?
     function FileSystem.OpenFile(path, mode)
     	return io.open(path, mode)
     end
+    
+    ---@return string
     function FileSystem.GetCurrentDirectory()
     	local source = debug.getinfo(2, 'S').source:gsub('\\', '/'):gsub('@', '')
     	local slashPos = source:reverse():find('/')
@@ -21,6 +28,8 @@ local __fileFuncs__ = {}
     	local currentPath = source:sub(0, length - slashPos)
     	return currentPath
     end
+    
+    ---@return string
     function FileSystem.GetCurrentWorkingDirectory()
     	local cmd = io.popen("cd")
     	if not cmd then
@@ -35,6 +44,9 @@ local __fileFuncs__ = {}
     	cmd:close()
     	return path
     end
+    
+    ---@param path string
+    ---@return string[]
     function FileSystem.GetDirectories(path)
     	local command = 'dir "' .. path .. '" /ad /b'
     	local result = io.popen(command)
@@ -48,6 +60,9 @@ local __fileFuncs__ = {}
     	end
     	return children
     end
+    
+    ---@param path string
+    ---@return string[]
     function FileSystem.GetFiles(path)
     	local command = 'dir "' .. path .. '" /a-d /b'
     	local result = io.popen(command)
@@ -61,26 +76,40 @@ local __fileFuncs__ = {}
     	end
     	return children
     end
+    
+    ---@param path string
+    ---@return boolean
     function FileSystem.CreateFolder(path)
     	if FileSystem.Exists(path) then
     		return true
     	end
+    
     	local success = os.execute("mkdir \"" .. path .. "\"")
     	return success or false
     end
+    
+    ---@param path string
+    ---@return boolean
     function FileSystem.CreateFile(path)
     	local file = FileSystem.OpenFile(path, "w")
     	if not file then
     		return false
     	end
+    
     	file:write("")
     	file:close()
+    
     	return true
     end
+    
+    ---@param path string
+    ---@return boolean
     function FileSystem.Exists(path)
     	return os.rename(path, path)
     end
+    
     return FileSystem
+    
 end
 
 ---@type Freemaker.FileSystem
