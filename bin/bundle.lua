@@ -1,12 +1,12 @@
 local __fileFuncs__ = {}
-    local __cache__ = {}
-    local function __loadFile__(module)
-        if not __cache__[module] then
-            __cache__[module] = { __fileFuncs__[module]() }
-        end
-        return table.unpack(__cache__[module])
+local __cache__ = {}
+local function __loadFile__(module)
+    if not __cache__[module] then
+        __cache__[module] = { __fileFuncs__[module]() }
     end
-    __fileFuncs__["src.CLIParser"] = function()
+    return table.unpack(__cache__[module])
+end
+__fileFuncs__["src.CLIParser"] = function()
     local function deep_update(t1, t2)
        for k, v in pairs(t2) do
           if type(v) == "table" then
