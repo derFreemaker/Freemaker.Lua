@@ -169,10 +169,11 @@ end
 print("writing...")
 
 if not args.comments then
-    outFile:write("---@diagnostic disable\r\n\r\n")
+    outFile:write("---@diagnostic disable\n\n")
 end
 
-outFile:write([[local __fileFuncs__ = {}
+outFile:write([[
+local __fileFuncs__ = {}
 local __cache__ = {}
 local function __loadFile__(module)
     if not __cache__[module] then

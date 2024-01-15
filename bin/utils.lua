@@ -1,5 +1,5 @@
----@diagnostic disable
-
+---@diagnostic disable
+
 local __fileFuncs__ = {}
 local __cache__ = {}
 local function __loadFile__(module)
