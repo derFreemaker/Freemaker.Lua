@@ -10,7 +10,7 @@ parser:argument("input", "Input file.")
 parser:option("-o --output", "Output file.", "out.lua")
 parser:option("-t --type", "Output type.")
 parser:option("-c --comments", "remove comments (does not remove all comments)", false)
-parser:option("-l --lines", "remove empty lines", false)
+parser:option("-l --lines", "remove empty lines", true)
 
 ---@type { input: string, output: string, type: string?, comments: boolean, lines: boolean }
 local args = parser:parse() -- { "-o", "bin/bundle.lua", "src/Bundle.lua" })
@@ -150,19 +150,27 @@ function bundler.processFile(path, module)
             end
         end
 
-        if args.lines then
-            if not line:find("%S") then
+        if not line:find("%S") then
+            if args.lines then
                 goto continue
+            else
+                outFile:write("\n")
             end
+
+            goto continue
         end
 
-        outFile:write("    " .. line .. "\n")
+        outFile:write("\t" .. line .. "\n")
         ::continue::
     end
     outFile:write("end\n\n")
 end
 
 print("writing...")
+
+if not args.comments then
+    outFile:write("---@diagnostic disable\r\n\r\n")
+end
 
 outFile:write([[local __fileFuncs__ = {}
 local __cache__ = {}
