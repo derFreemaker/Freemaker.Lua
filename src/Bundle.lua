@@ -10,7 +10,7 @@ parser:argument("input", "Input file.")
 parser:option("-o --output", "Output file.", "out.lua")
 parser:option("-t --type", "Output type.")
 parser:option("-c --comments", "remove comments (does not remove all comments)", false)
-parser:option("-l --lines", "remove empty lines", true)
+parser:option("-l --lines", "remove empty lines", false)
 
 ---@type { input: string, output: string, type: string?, comments: boolean, lines: boolean }
 local args = parser:parse() -- { "-o", "bin/bundle.lua", "src/Bundle.lua" })
