@@ -1,14 +1,14 @@
 ---@diagnostic disable
 
-local __fileFuncs__ = {}
-local __cache__ = {}
-local function __loadFile__(module)
-    if not __cache__[module] then
-        __cache__[module] = { __fileFuncs__[module]() }
-    end
-    return table.unpack(__cache__[module])
-end
-__fileFuncs__["src.Utils.String"] = function()
+	local __fileFuncs__ = {}
+	local __cache__ = {}
+	local function __loadFile__(module)
+	    if not __cache__[module] then
+	        __cache__[module] = { __fileFuncs__[module]() }
+	    end
+	    return table.unpack(__cache__[module])
+	end
+	__fileFuncs__["src.Utils.String"] = function()
 	---@class Freemaker.Utils.String
 	local String = {}
 	---@param str string
@@ -193,6 +193,9 @@ end
 
 __fileFuncs__["__main__"] = function()
 	---@class Freemaker.Utils
+	---@field String Freemaker.Utils.String
+	---@field Table Freemaker.Utils.Table
+	---@field Value Freemaker.Utils.Value
 	local Utils = {}
 	Utils.String = __loadFile__("src.Utils.String")
 	Utils.Table = __loadFile__("src.Utils.Table")
