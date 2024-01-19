@@ -8,7 +8,7 @@
 	    end
 	    return table.unpack(__cache__[module])
 	end
-	__fileFuncs__["src.cliParser"] = function()
+	__fileFuncs__["src.CLIParser"] = function()
 	-- The MIT License (MIT)
 
 	-- Copyright (c) 2013 - 2018 Peter Melnichenko
@@ -1541,7 +1541,7 @@
 
 end
 
-__fileFuncs__["src.fileSystem"] = function()
+__fileFuncs__["src.FileSystem"] = function()
 	---@class Freemaker.FileSystem
 	local FileSystem = {}
 
@@ -1640,7 +1640,14 @@ __fileFuncs__["src.fileSystem"] = function()
 	---@param path string
 	---@return boolean
 	function FileSystem.Exists(path)
-		return os.rename(path, path)
+		local ok, err, code = os.rename(path, path)
+		if not ok then
+			if code == 13 then
+				-- Permission denied, but it exists
+				return true
+			end
+		end
+		return ok
 	end
 
 	return FileSystem
@@ -1863,8 +1870,11 @@ __fileFuncs__["src.Utils.Value"] = function()
 
 end
 
-__fileFuncs__["src.utils"] = function()
+__fileFuncs__["src.Utils"] = function()
 	---@class Freemaker.Utils
+	---@field String Freemaker.Utils.String
+	---@field Table Freemaker.Utils.Table
+	---@field Value Freemaker.Utils.Value
 	local Utils = {}
 
 	Utils.String = __loadFile__("src.Utils.String")
@@ -1875,9 +1885,9 @@ __fileFuncs__["src.utils"] = function()
 
 end
 
-__fileFuncs__["src.path"] = function()
-	local Utils = __loadFile__("src.utils")
-	local FileSystem = __loadFile__("src.fileSystem")
+__fileFuncs__["src.Path"] = function()
+	local Utils = __loadFile__("src.Utils")
+	local FileSystem = __loadFile__("src.FileSystem")
 
 	---@param str string
 	---@return string str
@@ -2146,10 +2156,10 @@ __fileFuncs__["src.path"] = function()
 end
 
 __fileFuncs__["__main__"] = function()
-	local CliParser = __loadFile__("src.cliParser")
-	local FileSystem = __loadFile__("src.fileSystem")
-	local Utils = __loadFile__("src.utils")
-	local Path = __loadFile__("src.path")
+	local CliParser = __loadFile__("src.CLIParser")
+	local FileSystem = __loadFile__("src.FileSystem")
+	local Utils = __loadFile__("src.Utils")
+	local Path = __loadFile__("src.Path")
 
 	local CurrentWorkingDirectory = Path.new(FileSystem.GetCurrentWorkingDirectory())
 

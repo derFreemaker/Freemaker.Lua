@@ -1,7 +1,7 @@
-local CliParser = require("src.cliParser")
-local FileSystem = require("src.fileSystem")
-local Utils = require("src.utils")
-local Path = require("src.path")
+local CliParser = require("src.CLIParser")
+local FileSystem = require("src.FileSystem")
+local Utils = require("src.Utils")
+local Path = require("src.Path")
 
 local CurrentWorkingDirectory = Path.new(FileSystem.GetCurrentWorkingDirectory())
 

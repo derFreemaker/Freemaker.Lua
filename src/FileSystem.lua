@@ -96,7 +96,14 @@ end
 ---@param path string
 ---@return boolean
 function FileSystem.Exists(path)
-	return os.rename(path, path)
+	local ok, err, code = os.rename(path, path)
+	if not ok then
+		if code == 13 then
+			-- Permission denied, but it exists
+			return true
+		end
+	end
+	return ok
 end
 
 return FileSystem
