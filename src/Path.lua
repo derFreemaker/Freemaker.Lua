@@ -238,11 +238,19 @@ end
 ---@param path string
 ---@return Freemaker.FileSystem.Path
 function Path:Append(path)
+    if self.m_nodes[#self.m_nodes] == "" then
+        self.m_nodes[#self.m_nodes] = nil
+    end
+
     path = formatStr(path)
     local newNodes = Utils.String.Split(path, "/")
 
     for _, value in ipairs(newNodes) do
         self.m_nodes[#self.m_nodes + 1] = value
+    end
+
+    if self.m_nodes[#self.m_nodes] ~= "" and not self.m_nodes[#self.m_nodes]:find("^.+%..+$") then
+        self.m_nodes[#self.m_nodes + 1] = ""
     end
 
     self:Normalize()
