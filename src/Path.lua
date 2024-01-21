@@ -207,6 +207,19 @@ function Path:GetFileStem()
     return stem
 end
 
+---@return string? folderName
+function Path:GetDirectoryName()
+    if not self:IsDir() then
+        error("path is not a directory: " .. self:ToString())
+    end
+
+    if #self.m_nodes < 2 then
+        error("path is empty")
+    end
+
+    return self.m_nodes[#self.m_nodes - 1]
+end
+
 ---@return Freemaker.FileSystem.Path
 function Path:Normalize()
     ---@type string[]
