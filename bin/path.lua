@@ -562,7 +562,7 @@ __fileFuncs__["__main__"] = function()
 	    return stem
 	end
 
-	---@return string? folderName
+	---@return string folderName
 	function Path:GetDirectoryName()
 	    if not self:IsDir() then
 	        error("path is not a directory: " .. self:ToString())

@@ -207,7 +207,7 @@ function Path:GetFileStem()
     return stem
 end
 
----@return string? folderName
+---@return string folderName
 function Path:GetDirectoryName()
     if not self:IsDir() then
         error("path is not a directory: " .. self:ToString())
