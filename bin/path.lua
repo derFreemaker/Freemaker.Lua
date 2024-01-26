@@ -281,7 +281,7 @@ __fileFuncs__["src.FileSystem"] = function()
 	---@param path string
 	---@return string[]
 	function FileSystem.GetDirectories(path)
-		local command = 'dir "' .. path .. '" /ad /b'
+		local command = 'dir "' .. path .. '" /ad /b /on'
 		local result = io.popen(command)
 		if not result then
 			error('unable to run command: ' .. command)
@@ -297,7 +297,7 @@ __fileFuncs__["src.FileSystem"] = function()
 	---@param path string
 	---@return string[]
 	function FileSystem.GetFiles(path)
-		local command = 'dir "' .. path .. '" /a-d /b'
+		local command = 'dir "' .. path .. '" /a-d /b /on'
 		local result = io.popen(command)
 		if not result then
 			error('unable to run command: ' .. command)
