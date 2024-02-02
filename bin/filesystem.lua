@@ -1,126 +1,117 @@
----@diagnostic disable
+---@class Freemaker.FileSystem
+local FileSystem = {}
 
-	local __fileFuncs__ = {}
-	local __cache__ = {}
-	local function __loadFile__(module)
-	    if not __cache__[module] then
-	        __cache__[module] = { __fileFuncs__[module]() }
-	    end
-	    return table.unpack(__cache__[module])
+---@param path string
+---@param mode openmode
+---@return file*?
+function FileSystem.OpenFile(path, mode)
+	return io.open(path, mode)
+end
+
+---@return string
+function FileSystem.GetCurrentDirectory()
+	local source = debug.getinfo(2, 'S').source:gsub('\\', '/'):gsub('@', '')
+	local slashPos = source:reverse():find('/')
+	if not slashPos then
+		return ""
 	end
-	__fileFuncs__["__main__"] = function()
-	---@class Freemaker.FileSystem
-	local FileSystem = {}
+	local length = source:len()
+	local currentPath = source:sub(0, length - slashPos)
+	return currentPath
+end
 
-	---@param path string
-	---@param mode openmode
-	---@return file*?
-	function FileSystem.OpenFile(path, mode)
-		return io.open(path, mode)
+---@return string
+function FileSystem.GetCurrentWorkingDirectory()
+	local cmd = io.popen("cd")
+	if not cmd then
+		error("unable to get current directory")
 	end
-
-	---@return string
-	function FileSystem.GetCurrentDirectory()
-		local source = debug.getinfo(2, 'S').source:gsub('\\', '/'):gsub('@', '')
-		local slashPos = source:reverse():find('/')
-		if not slashPos then
-			return ""
+	local path = ""
+	for line in cmd:lines() do
+		if line ~= "" then
+			path = path .. line
 		end
-		local length = source:len()
-		local currentPath = source:sub(0, length - slashPos)
-		return currentPath
 	end
+	cmd:close()
+	return path
+end
 
-	---@return string
-	function FileSystem.GetCurrentWorkingDirectory()
-		local cmd = io.popen("cd")
-		if not cmd then
-			error("unable to get current directory")
-		end
-		local path = ""
-		for line in cmd:lines() do
-			if line ~= "" then
-				path = path .. line
-			end
-		end
-		cmd:close()
-		return path
+---@param path string
+---@return string[]
+function FileSystem.GetDirectories(path)
+	local command = 'dir "' .. path .. '" /ad /b /on'
+	local result = io.popen(command)
+	if not result then
+		error('unable to run command: ' .. command)
 	end
-
-	---@param path string
-	---@return string[]
-	function FileSystem.GetDirectories(path)
-		local command = 'dir "' .. path .. '" /ad /b /on'
-		local result = io.popen(command)
-		if not result then
-			error('unable to run command: ' .. command)
-		end
-		---@type string[]
-		local children = {}
-		for line in result:lines() do
-			table.insert(children, line)
-		end
-		return children
+	---@type string[]
+	local children = {}
+	for line in result:lines() do
+		children[line] = 0
 	end
+	return children
+end
 
-	---@param path string
-	---@return string[]
-	function FileSystem.GetFiles(path)
-		local command = 'dir "' .. path .. '" /a-d /b /on'
-		local result = io.popen(command)
-		if not result then
-			error('unable to run command: ' .. command)
-		end
-		---@type string[]
-		local children = {}
-		for line in result:lines() do
-			table.insert(children, line)
-		end
-		return children
+---@param path string
+---@return string[]
+function FileSystem.GetFiles(path)
+	local command = 'dir "' .. path .. '" /a-d /b /on'
+	local result = io.popen(command)
+	if not result then
+		error('unable to run command: ' .. command)
 	end
-
-	---@param path string
-	---@return boolean
-	function FileSystem.CreateFolder(path)
-		if FileSystem.Exists(path) then
-			return true
-		end
-
-		local success = os.execute("mkdir \"" .. path .. "\"")
-		return success or false
+	---@type string[]
+	local children = {}
+	for line in result:lines() do
+		children[line] = 0
 	end
+	return children
+end
 
-	---@param path string
-	---@return boolean
-	function FileSystem.CreateFile(path)
-		local file = FileSystem.OpenFile(path, "w")
-		if not file then
-			return false
-		end
-
-		file:write("")
-		file:close()
-
+---@param path string
+---@return boolean
+function FileSystem.CreateDirectory(path)
+	if FileSystem.Exists(path) then
 		return true
 	end
 
-	---@param path string
-	---@return boolean
-	function FileSystem.Exists(path)
-		local ok, err, code = os.rename(path, path)
-		if not ok then
-			if code == 13 then
-				-- Permission denied, but it exists
-				return true
-			end
-		end
-		return ok
-	end
-
-	return FileSystem
-
+	local success = os.execute("mkdir \"" .. path .. "\"")
+	return success or false
 end
 
----@type Freemaker.FileSystem
-local main = __fileFuncs__["__main__"]()
-return main
+---@param path string
+---@return boolean
+function FileSystem.CreateFile(path)
+	local file = FileSystem.OpenFile(path, "w")
+	if not file then
+		return false
+	end
+
+	file:write("")
+	file:close()
+
+	return true
+end
+
+---@param path string
+---@return boolean
+function FileSystem.Exists(path)
+	local ok, err, code = os.rename(path, path)
+	if not ok then
+		if code == 13 then
+			-- Permission denied, but it exists
+			return true
+		end
+	end
+	return ok or false
+end
+
+local filesystem = package.loadlib(FileSystem.GetCurrentDirectory() .. "/../filesystem/bin/freemaker_filesystem.dll",
+	"luaopen_filesystem")
+if filesystem then
+	for key, value in pairs(filesystem()) do
+		FileSystem[key] = value
+	end
+end
+
+return FileSystem
