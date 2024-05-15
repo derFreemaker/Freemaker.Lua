@@ -1,5 +1,5 @@
 local CliParser = require("src.CLIParser")
-local FileSystem = require("src.FileSystem")
+local FileSystem = require("bin.FileSystem")
 local Utils = require("src.Utils")
 local Path = require("src.Path")
 
@@ -12,7 +12,7 @@ parser:option("-t --type", "Output type.")
 parser:option("-c --comments", "remove comments (does not remove all comments)", false)
 parser:option("-l --lines", "remove empty lines", false)
 
----@type { input: string, output: string, type: string?, comments: boolean, lines: boolean }
+---@type { input: string, output: string, type: string | nil, comments: boolean, lines: boolean }
 local args = parser:parse() -- { "-o", "bin/bundle.lua", "src/Bundle.lua" })
 
 local InputFilePath = Path.new(args.input)

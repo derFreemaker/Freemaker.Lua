@@ -6,7 +6,7 @@ namespace fs = std::filesystem;
 
 #include <lua/lua.hpp>
 
-int luaGetCurrentWorkingDirectory(lua_State* L) {
+int luaGetCurrentDirectory(lua_State* L) {
     lua_pushstring(L , fs::current_path().string().c_str());
     return 1;
 }
@@ -62,12 +62,12 @@ int luaExists(lua_State* L) {
 }
 
 static const luaL_Reg luaFilesystemLib[] = {
-    {"GetCurrentWorkingDirectory", luaGetCurrentWorkingDirectory},
+    {"GetCurrentDirectory", luaGetCurrentDirectory},
     {"GetDirectories", luaGetDirectories},
     {"GetFiles", luaGetFiles},
     {"CreateDirectory", luaCreateDirectory},
     {"Exists", luaExists},
-    {nullptr, nullptr}
+    {NULL, NULL}
 };
 
 extern "C" __declspec(dllexport) int luaopen_filesystem(lua_State * L) {

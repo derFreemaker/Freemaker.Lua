@@ -1,21 +1,21 @@
 ---@diagnostic disable
 
-	local __fileFuncs__ = {}
-	local __cache__ = {}
-	local function __loadFile__(module)
-	    if not __cache__[module] then
-	        __cache__[module] = { __fileFuncs__[module]() }
-	    end
-	    return table.unpack(__cache__[module])
-	end
-	__fileFuncs__["src.Utils.String"] = function()
+local __fileFuncs__ = {}
+local __cache__ = {}
+local function __loadFile__(module)
+    if not __cache__[module] then
+        __cache__[module] = { __fileFuncs__[module]() }
+    end
+    return table.unpack(__cache__[module])
+end
+__fileFuncs__["src.Utils.String"] = function()
 	---@class Freemaker.Utils.String
 	local String = {}
 
 	---@param str string
 	---@param pattern string
-	---@param plain boolean?
-	---@return string?, integer
+	---@param plain boolean | nil
+	---@return string | nil, integer
 	local function findNext(str, pattern, plain)
 	    local found = str:find(pattern, 0, plain or false)
 	    if found == nil then
@@ -24,9 +24,9 @@
 	    return str:sub(0, found - 1), found - 1
 	end
 
-	---@param str string?
-	---@param sep string?
-	---@param plain boolean?
+	---@param str string | nil
+	---@param sep string | nil
+	---@param plain boolean | nil
 	---@return string[]
 	function String.Split(str, sep, plain)
 	    if str == nil then
@@ -59,7 +59,7 @@
 	    end
 	end
 
-	---@param str string?
+	---@param str string | nil
 	---@return boolean
 	function String.IsNilOrEmpty(str)
 	    if str == nil then
@@ -93,9 +93,9 @@ __fileFuncs__["src.Utils.Table"] = function()
 	---@class Freemaker.Utils.Table
 	local Table = {}
 
-	---@param obj table?
+	---@param obj table | nil
 	---@param seen table[]
-	---@return table?
+	---@return table | nil
 	local function copyTable(obj, copy, seen)
 	    if obj == nil then return nil end
 	    if seen[obj] then return seen[obj] end
@@ -126,7 +126,7 @@ __fileFuncs__["src.Utils.Table"] = function()
 	end
 
 	---@param t table
-	---@param ignoreProperties string[]?
+	---@param ignoreProperties string[] | nil
 	function Table.Clear(t, ignoreProperties)
 	    if not ignoreProperties then
 	        ignoreProperties = {}

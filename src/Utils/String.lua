@@ -3,8 +3,8 @@ local String = {}
 
 ---@param str string
 ---@param pattern string
----@param plain boolean?
----@return string?, integer
+---@param plain boolean | nil
+---@return string | nil, integer
 local function findNext(str, pattern, plain)
     local found = str:find(pattern, 0, plain or false)
     if found == nil then
@@ -13,9 +13,9 @@ local function findNext(str, pattern, plain)
     return str:sub(0, found - 1), found - 1
 end
 
----@param str string?
----@param sep string?
----@param plain boolean?
+---@param str string | nil
+---@param sep string | nil
+---@param plain boolean | nil
 ---@return string[]
 function String.Split(str, sep, plain)
     if str == nil then
@@ -48,7 +48,7 @@ function String.Split(str, sep, plain)
     end
 end
 
----@param str string?
+---@param str string | nil
 ---@return boolean
 function String.IsNilOrEmpty(str)
     if str == nil then

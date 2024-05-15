@@ -1,9 +1,9 @@
 ---@class Freemaker.Utils.Table
 local Table = {}
 
----@param obj table?
+---@param obj table | nil
 ---@param seen table[]
----@return table?
+---@return table | nil
 local function copyTable(obj, copy, seen)
     if obj == nil then return nil end
     if seen[obj] then return seen[obj] end
@@ -34,7 +34,7 @@ function Table.CopyTo(from, to)
 end
 
 ---@param t table
----@param ignoreProperties string[]?
+---@param ignoreProperties string[] | nil
 function Table.Clear(t, ignoreProperties)
     if not ignoreProperties then
         ignoreProperties = {}

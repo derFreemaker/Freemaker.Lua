@@ -1,30 +1,26 @@
+---@diagnostic disable
+
 ---@class Freemaker.FileSystem
 local FileSystem = {}
 
----@param path string
----@param mode openmode
----@return file*?
-function FileSystem.OpenFile(path, mode)
-	return io.open(path, mode)
-end
-
 ---@return string
 function FileSystem.GetCurrentDirectory()
-	local source = debug.getinfo(2, 'S').source:gsub('\\', '/'):gsub('@', '')
-	local slashPos = source:reverse():find('/')
-	if not slashPos then
+	local info = debug.getinfo(2)
+	local source = info.source:gsub("\\", "/"):sub(2)
+	local lastSlashPos = source:reverse():find("/")
+	if lastSlashPos == nil then
 		return ""
 	end
-	local length = source:len()
-	local currentPath = source:sub(0, length - slashPos)
-	return currentPath
+
+	local path = source:sub(0, source:len() - lastSlashPos)
+	return path
 end
 
 ---@return string
 function FileSystem.GetCurrentWorkingDirectory()
 	local cmd = io.popen("cd")
 	if not cmd then
-		error("unable to get current directory")
+		error("unable to get current working directory")
 	end
 	local path = ""
 	for line in cmd:lines() do
@@ -106,8 +102,8 @@ function FileSystem.Exists(path)
 	return ok or false
 end
 
-local filesystem = package.loadlib(FileSystem.GetCurrentDirectory() .. "/../filesystem/bin/freemaker_filesystem.dll",
-	"luaopen_filesystem")
+local libPath = FileSystem.GetCurrentDirectory() .. "/filesystem.dll"
+local filesystem = package.loadlib(libPath, "luaopen_filesystem")
 if filesystem then
 	for key, value in pairs(filesystem()) do
 		FileSystem[key] = value

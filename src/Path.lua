@@ -1,5 +1,5 @@
 local Utils = require("src.Utils")
-local FileSystem = require("src.FileSystem")
+local FileSystem = require("bin.FileSystem")
 
 ---@param str string
 ---@return string str
@@ -22,7 +22,6 @@ function Path.IsNode(str)
     return true
 end
 
----@package
 ---@param pathOrNodes string | string[] | nil
 ---@return Freemaker.FileSystem.Path
 function Path.new(pathOrNodes)
