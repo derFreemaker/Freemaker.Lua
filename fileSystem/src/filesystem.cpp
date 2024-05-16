@@ -70,7 +70,7 @@ static const luaL_Reg luaFilesystemLib[] = {
     {NULL, NULL}
 };
 
-extern "C" __declspec(dllexport) int luaopen_filesystem(lua_State * L) {
+extern "C" __declspec(dllexport) int luaopen_libfilesystem(lua_State * L) {
     lua_newtable(L);
     luaL_setfuncs(L , luaFilesystemLib , 0);
     return 1;

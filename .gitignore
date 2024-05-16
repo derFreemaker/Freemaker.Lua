@@ -1,6 +1,7 @@
-# Syncthing
-.stfolder
-.stignore
-
-# user
+# user specific files
 .user
+.idea
+
+# cmake build directories
+**/cmake-build-debug
+**/cmake-build-release
