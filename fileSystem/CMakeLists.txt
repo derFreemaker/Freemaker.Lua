@@ -14,3 +14,7 @@ file(GLOB HEADERS "src/*.h")
 add_library(filesystem SHARED ${SOURCES} ${HEADERS})
 
 target_link_libraries(filesystem ${LUA_LIBRARIES})
+
+# set to compile ro x64
+add_compile_options(-m64)
+add_compile_options(-mfpic)
