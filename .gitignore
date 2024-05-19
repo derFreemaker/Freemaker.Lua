@@ -5,3 +5,7 @@
 # cmake build directories
 **/cmake-build-debug
 **/cmake-build-release
+
+# cmake build directories
+**/cmake-build-debug-mingw
+**/cmake-build-release-mingw
