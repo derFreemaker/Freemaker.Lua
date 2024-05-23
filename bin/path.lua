@@ -129,13 +129,17 @@ __fileFuncs__["src.Utils.Table"] = function()
 	---@param ignoreProperties string[] | nil
 	function Table.Clear(t, ignoreProperties)
 	    if not ignoreProperties then
-	        ignoreProperties = {}
-	    end
-	    for key, _ in next, t, nil do
-	        if not Table.Contains(ignoreProperties, key) then
+	        for key, _ in next, t, nil do
 	            t[key] = nil
 	        end
+	    else
+	        for key, _ in next, t, nil do
+	            if not Table.Contains(ignoreProperties, key) then
+	                t[key] = nil
+	            end
+	        end
 	    end
+
 	    setmetatable(t, nil)
 	end
 
@@ -247,16 +251,22 @@ __fileFuncs__["bin.FileSystem"] = function()
 
 	---@return string
 	function FileSystem.GetCurrentDirectory()
-		local info = debug.getinfo(2, "S")
-		local lastSlashPos = info.source:gsub("\\", "/"):reverse():find("/")
-		return info.source:sub(0, lastSlashPos)
+		local info = debug.getinfo(2)
+		local source = info.source:gsub("\\", "/"):sub(2)
+		local lastSlashPos = source:reverse():find("/")
+		if lastSlashPos == nil then
+			return ""
+		end
+
+		local path = source:sub(0, source:len() - lastSlashPos)
+		return path
 	end
 
 	---@return string
 	function FileSystem.GetCurrentWorkingDirectory()
 		local cmd = io.popen("cd")
 		if not cmd then
-			error("unable to get current directory")
+			error("unable to get current working directory")
 		end
 		local path = ""
 		for line in cmd:lines() do
@@ -338,8 +348,8 @@ __fileFuncs__["bin.FileSystem"] = function()
 		return ok or false
 	end
 
-	local filesystem = package.loadlib(FileSystem.GetCurrentDirectory() .. "/../filesystem/bin/freemaker_filesystem.dll",
-		"luaopen_filesystem")
+	local libPath = FileSystem.GetCurrentDirectory() .. "/filesystem.dll"
+	local filesystem = package.loadlib(libPath, "luaopen_filesystem")
 	if filesystem then
 		for key, value in pairs(filesystem()) do
 			FileSystem[key] = value
