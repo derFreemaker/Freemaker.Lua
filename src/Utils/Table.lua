@@ -37,13 +37,17 @@ end
 ---@param ignoreProperties string[] | nil
 function Table.Clear(t, ignoreProperties)
     if not ignoreProperties then
-        ignoreProperties = {}
-    end
-    for key, _ in next, t, nil do
-        if not Table.Contains(ignoreProperties, key) then
+        for key, _ in next, t, nil do
             t[key] = nil
         end
+    else
+        for key, _ in next, t, nil do
+            if not Table.Contains(ignoreProperties, key) then
+                t[key] = nil
+            end
+        end
     end
+
     setmetatable(t, nil)
 end
 
