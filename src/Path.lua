@@ -1,5 +1,5 @@
 local Utils = require("src.Utils")
-local FileSystem = require("bin.FileSystem")
+local FileSystem = require("bin.filesystem")
 
 ---@param str string
 ---@return string str
@@ -80,7 +80,7 @@ function Path:Create()
     end
 
     if self:IsDir() then
-        return FileSystem.CreateFolder(self:ToString())
+        return FileSystem.CreateDirectory(self:ToString())
     elseif self:IsFile() then
         return FileSystem.CreateFile(self:ToString())
     end

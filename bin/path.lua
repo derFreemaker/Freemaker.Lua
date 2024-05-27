@@ -243,7 +243,7 @@ __fileFuncs__["src.Utils"] = function()
 
 end
 
-__fileFuncs__["bin.FileSystem"] = function()
+__fileFuncs__["bin.filesystem"] = function()
 	---@diagnostic disable
 
 	---@class Freemaker.FileSystem
@@ -362,7 +362,7 @@ end
 
 __fileFuncs__["__main__"] = function()
 	local Utils = __loadFile__("src.Utils")
-	local FileSystem = __loadFile__("bin.FileSystem")
+	local FileSystem = __loadFile__("bin.filesystem")
 
 	---@param str string
 	---@return string str
@@ -443,7 +443,7 @@ __fileFuncs__["__main__"] = function()
 	    end
 
 	    if self:IsDir() then
-	        return FileSystem.CreateFolder(self:ToString())
+	        return FileSystem.CreateDirectory(self:ToString())
 	    elseif self:IsFile() then
 	        return FileSystem.CreateFile(self:ToString())
 	    end
