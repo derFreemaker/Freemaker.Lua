@@ -1,5 +1,5 @@
 local CliParser = require("src.CLIParser")
-local FileSystem = require("bin.FileSystem")
+local FileSystem = require("bin.filesystem")
 local Utils = require("src.Utils")
 local Path = require("src.Path")
 

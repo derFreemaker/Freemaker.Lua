@@ -279,14 +279,14 @@ __fileFuncs__["bin.filesystem"] = function()
 	end
 
 	---@param path string
-	---@return string[]
+	---@return table<string>
 	function FileSystem.GetDirectories(path)
 		local command = 'dir "' .. path .. '" /ad /b /on'
 		local result = io.popen(command)
 		if not result then
 			error('unable to run command: ' .. command)
 		end
-		---@type string[]
+		---@type table<string>
 		local children = {}
 		for line in result:lines() do
 			children[line] = 0
@@ -295,14 +295,14 @@ __fileFuncs__["bin.filesystem"] = function()
 	end
 
 	---@param path string
-	---@return string[]
+	---@return table<string>
 	function FileSystem.GetFiles(path)
 		local command = 'dir "' .. path .. '" /a-d /b /on'
 		local result = io.popen(command)
 		if not result then
 			error('unable to run command: ' .. command)
 		end
-		---@type string[]
+		---@type table<string>
 		local children = {}
 		for line in result:lines() do
 			children[line] = 0
