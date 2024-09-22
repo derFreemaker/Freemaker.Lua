@@ -6,7 +6,7 @@ local string = {}
 ---@param plain boolean | nil
 ---@return string | nil, integer
 local function find_next(str, pattern, plain)
-    local found = str:find(pattern, 0, plain or false)
+    local found = str:find(pattern, 0, plain or true)
     if found == nil then
         return nil, 0
     end
