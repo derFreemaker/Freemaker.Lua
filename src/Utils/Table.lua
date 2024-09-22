@@ -109,4 +109,18 @@ function table.invert(t)
     return inverted
 end
 
+---@generic T
+---@generic R
+---@param t T[]
+---@param func fun(value: T) : R
+---@return R[]
+function table.map(t, func)
+    ---@type any[]
+    local result = {}
+    for index, value in ipairs(t) do
+        result[index] = func(value)
+    end
+    return result
+end
+
 return table
