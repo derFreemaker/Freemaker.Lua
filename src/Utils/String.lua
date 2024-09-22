@@ -1,11 +1,11 @@
----@class Freemaker.Utils.String
-local String = {}
+---@class Freemaker.utils.string
+local string = {}
 
 ---@param str string
 ---@param pattern string
 ---@param plain boolean | nil
 ---@return string | nil, integer
-local function findNext(str, pattern, plain)
+local function find_next(str, pattern, plain)
     local found = str:find(pattern, 0, plain or false)
     if found == nil then
         return nil, 0
@@ -17,7 +17,7 @@ end
 ---@param sep string | nil
 ---@param plain boolean | nil
 ---@return string[]
-function String.Split(str, sep, plain)
+function string.split(str, sep, plain)
     if str == nil then
         return {}
     end
@@ -36,7 +36,7 @@ function String.Split(str, sep, plain)
     local i = 0
     while true do
         i = i + 1
-        local foundStr, foundPos = findNext(str, sep, plain)
+        local foundStr, foundPos = find_next(str, sep, plain)
 
         if foundStr == nil then
             tbl[i] = str
@@ -50,7 +50,7 @@ end
 
 ---@param str string | nil
 ---@return boolean
-function String.IsNilOrEmpty(str)
+function string.is_nil_or_empty(str)
     if str == nil then
         return true
     end
@@ -60,18 +60,4 @@ function String.IsNilOrEmpty(str)
     return false
 end
 
----@param array string[]
----@param sep string
----@return string
-function String.Join(array, sep)
-    local str = ""
-
-    str = array[1]
-    for _, value in next, array, 1 do
-        str = str .. sep .. value
-    end
-
-    return str
-end
-
-return String
+return string

@@ -1,11 +1,11 @@
----@class Freemaker.Utils
----@field String Freemaker.Utils.String
----@field Table Freemaker.Utils.Table
----@field Value Freemaker.Utils.Value
-local Utils = {}
+---@class Freemaker.utils
+---@field string Freemaker.utils.string
+---@field table Freemaker.utils.table
+---@field value Freemaker.utils.value
+local utils = {}
 
-Utils.String = require("src.Utils.String")
-Utils.Table = require("src.Utils.Table")
-Utils.Value = require("src.Utils.Value")
+utils.string = require("src.utils.string")
+utils.table = require("src.utils.table")
+utils.value = require("src.utils.value")
 
-return Utils
+return utils

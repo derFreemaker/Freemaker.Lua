@@ -90,5 +90,8 @@
 		"xstring": "cpp",
 		"xtr1common": "cpp",
 		"xutility": "cpp"
-	}
+	},
+	"Lua.diagnostics.globals": [
+		"__bundler__"
+	]
 }

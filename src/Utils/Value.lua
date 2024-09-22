@@ -1,19 +1,19 @@
-local Table = require("src.Utils.Table")
+local table = require("src.utils.table")
 
----@class Freemaker.Utils.Value
-local Value = {}
+---@class Freemaker.utils.value
+local value = {}
 
 ---@generic T
 ---@param value T
 ---@return T
-function Value.Copy(value)
+function value.copy(value)
     local typeStr = type(value)
 
     if typeStr == "table" then
-        return Table.Copy(value)
+        return table.Copy(value)
     end
 
     return value
 end
 
-return Value
+return value

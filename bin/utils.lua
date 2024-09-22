@@ -1,22 +1,53 @@
 ---@diagnostic disable
 
-local __fileFuncs__ = {}
-local __cache__ = {}
-local function __loadFile__(module)
-    if not __cache__[module] then
-        __cache__[module] = { __fileFuncs__[module]() }
+local __bundler__ = {
+    __files__ = {},
+    __binary_files__ = {},
+    __cache__ = {},
+}
+function __bundler__.__get_os__()
+    if package.config:sub(1, 1) == '\\' then
+        return "windows"
+    else
+        return "linux"
     end
-    return table.unpack(__cache__[module])
 end
-__fileFuncs__["src.Utils.String"] = function()
-	---@class Freemaker.Utils.String
-	local String = {}
+function __bundler__.__loadFile__(module)
+    if not __bundler__.__cache__[module] then
+        if __bundler__.__binary_files__[module] then
+            local os_type = __bundler__.__get_os__()
+            local file_path = os.tmpname()
+            local file = io.open(file_path, "wb")
+            if not file then
+                error("unable to open file: " .. file_path)
+            end
+            local content
+            if os_type == "windows" then
+                content = __bundler__.__files__[module .. ".dll"]
+            else
+                content = __bundler__.__files__[module .. ".so"]
+            end
+            for i = 1, #content do
+                local byte = tonumber(content[i], 16)
+                file:write(string.char(byte))
+            end
+            file:close()
+            __bundler__.__cache__[module] = { package.loadlib(file_path, "luaopen_" .. module)() }
+        else
+            __bundler__.__cache__[module] = { __bundler__.__files__[module]() }
+        end
+    end
+    return table.unpack(__bundler__.__cache__[module])
+end
+__bundler__.__files__["src.utils.string"] = function()
+	---@class Freemaker.utils.string
+	local string = {}
 
 	---@param str string
 	---@param pattern string
 	---@param plain boolean | nil
 	---@return string | nil, integer
-	local function findNext(str, pattern, plain)
+	local function find_next(str, pattern, plain)
 	    local found = str:find(pattern, 0, plain or false)
 	    if found == nil then
 	        return nil, 0
@@ -28,7 +59,7 @@ __fileFuncs__["src.Utils.String"] = function()
 	---@param sep string | nil
 	---@param plain boolean | nil
 	---@return string[]
-	function String.Split(str, sep, plain)
+	function string.split(str, sep, plain)
 	    if str == nil then
 	        return {}
 	    end
@@ -47,7 +78,7 @@ __fileFuncs__["src.Utils.String"] = function()
 	    local i = 0
 	    while true do
 	        i = i + 1
-	        local foundStr, foundPos = findNext(str, sep, plain)
+	        local foundStr, foundPos = find_next(str, sep, plain)
 
 	        if foundStr == nil then
 	            tbl[i] = str
@@ -61,7 +92,7 @@ __fileFuncs__["src.Utils.String"] = function()
 
 	---@param str string | nil
 	---@return boolean
-	function String.IsNilOrEmpty(str)
+	function string.is_nil_or_empty(str)
 	    if str == nil then
 	        return true
 	    end
@@ -71,41 +102,27 @@ __fileFuncs__["src.Utils.String"] = function()
 	    return false
 	end
 
-	---@param array string[]
-	---@param sep string
-	---@return string
-	function String.Join(array, sep)
-	    local str = ""
-
-	    str = array[1]
-	    for _, value in next, array, 1 do
-	        str = str .. sep .. value
-	    end
-
-	    return str
-	end
-
-	return String
+	return string
 
 end
 
-__fileFuncs__["src.Utils.Table"] = function()
-	---@class Freemaker.Utils.Table
-	local Table = {}
+__bundler__.__files__["src.utils.table"] = function()
+	---@class Freemaker.utils.table
+	local table = {}
 
 	---@param obj table | nil
 	---@param seen table[]
 	---@return table | nil
-	local function copyTable(obj, copy, seen)
+	local function copy_table(obj, copy, seen)
 	    if obj == nil then return nil end
 	    if seen[obj] then return seen[obj] end
 
 	    seen[obj] = copy
-	    setmetatable(copy, copyTable(getmetatable(obj), {}, seen))
+	    setmetatable(copy, copy_table(getmetatable(obj), {}, seen))
 
 	    for key, value in next, obj, nil do
-	        key = (type(key) == "table") and copyTable(key, {}, seen) or key
-	        value = (type(value) == "table") and copyTable(value, {}, seen) or value
+	        key = (type(key) == "table") and copy_table(key, {}, seen) or key
+	        value = (type(value) == "table") and copy_table(value, {}, seen) or value
 	        rawset(copy, key, value)
 	    end
 
@@ -115,26 +132,26 @@ __fileFuncs__["src.Utils.Table"] = function()
 	---@generic TTable
 	---@param t TTable
 	---@return TTable table
-	function Table.Copy(t)
-	    return copyTable(t, {}, {})
+	function table.copy(t)
+	    return copy_table(t, {}, {})
 	end
 
 	---@param from table
 	---@param to table
-	function Table.CopyTo(from, to)
-	    copyTable(from, to, {})
+	function table.copy_to(from, to)
+	    copy_table(from, to, {})
 	end
 
 	---@param t table
 	---@param ignoreProperties string[] | nil
-	function Table.Clear(t, ignoreProperties)
+	function table.clear(t, ignoreProperties)
 	    if not ignoreProperties then
 	        for key, _ in next, t, nil do
 	            t[key] = nil
 	        end
 	    else
 	        for key, _ in next, t, nil do
-	            if not Table.Contains(ignoreProperties, key) then
+	            if not table.contains(ignoreProperties, key) then
 	                t[key] = nil
 	            end
 	        end
@@ -146,7 +163,7 @@ __fileFuncs__["src.Utils.Table"] = function()
 	---@param t table
 	---@param value any
 	---@return boolean
-	function Table.Contains(t, value)
+	function table.contains(t, value)
 	    for _, tValue in pairs(t) do
 	        if value == tValue then
 	            return true
@@ -158,7 +175,7 @@ __fileFuncs__["src.Utils.Table"] = function()
 	---@param t table
 	---@param key any
 	---@return boolean
-	function Table.ContainsKey(t, key)
+	function table.contains_key(t, key)
 	    if t[key] ~= nil then
 	        return true
 	    end
@@ -167,7 +184,7 @@ __fileFuncs__["src.Utils.Table"] = function()
 
 	--- removes all spaces between
 	---@param t any[]
-	function Table.Clean(t)
+	function table.clean(t)
 	    for key, value in pairs(t) do
 	        for i = key - 1, 1, -1 do
 	            if key ~= 1 then
@@ -183,7 +200,7 @@ __fileFuncs__["src.Utils.Table"] = function()
 
 	---@param t table
 	---@return integer count
-	function Table.Count(t)
+	function table.count(t)
 	    local count = 0
 	    for _, _ in next, t, nil do
 	        count = count + 1
@@ -193,7 +210,7 @@ __fileFuncs__["src.Utils.Table"] = function()
 
 	---@param t table
 	---@return table
-	function Table.Invert(t)
+	function table.invert(t)
 	    local inverted = {}
 	    for key, value in pairs(t) do
 	        inverted[value] = key
@@ -201,48 +218,48 @@ __fileFuncs__["src.Utils.Table"] = function()
 	    return inverted
 	end
 
-	return Table
+	return table
 
 end
 
-__fileFuncs__["src.Utils.Value"] = function()
-	local Table = __loadFile__("src.Utils.Table")
+__bundler__.__files__["src.utils.value"] = function()
+	local table = __bundler__.__loadFile__("src.utils.table")
 
-	---@class Freemaker.Utils.Value
-	local Value = {}
+	---@class Freemaker.utils.value
+	local value = {}
 
 	---@generic T
 	---@param value T
 	---@return T
-	function Value.Copy(value)
+	function value.copy(value)
 	    local typeStr = type(value)
 
 	    if typeStr == "table" then
-	        return Table.Copy(value)
+	        return table.Copy(value)
 	    end
 
 	    return value
 	end
 
-	return Value
+	return value
 
 end
 
-__fileFuncs__["__main__"] = function()
-	---@class Freemaker.Utils
-	---@field String Freemaker.Utils.String
-	---@field Table Freemaker.Utils.Table
-	---@field Value Freemaker.Utils.Value
-	local Utils = {}
+__bundler__.__files__["__main__"] = function()
+	---@class Freemaker.utils
+	---@field string Freemaker.utils.string
+	---@field table Freemaker.utils.table
+	---@field value Freemaker.utils.value
+	local utils = {}
 
-	Utils.String = __loadFile__("src.Utils.String")
-	Utils.Table = __loadFile__("src.Utils.Table")
-	Utils.Value = __loadFile__("src.Utils.Value")
+	utils.string = __bundler__.__loadFile__("src.utils.string")
+	utils.table = __bundler__.__loadFile__("src.utils.table")
+	utils.value = __bundler__.__loadFile__("src.utils.value")
 
-	return Utils
+	return utils
 
 end
 
----@type Freemaker.Utils
-local main = __fileFuncs__["__main__"]()
-return main
+---@type Freemaker.utils
+local main = { __bundler__.__loadFile__("__main__") }
+return table.unpack(main)

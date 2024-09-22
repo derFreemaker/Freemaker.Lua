@@ -1,20 +1,22 @@
-local Utils = require("src.Utils")
-local FileSystem = require("bin.filesystem")
+local utils = require("src.utils.init")
+
+---@type lfs
+local file_system = require("lfs")
 
 ---@param str string
 ---@return string str
-local function formatStr(str)
+local function format_str(str)
     str = str:gsub("\\", "/")
     return str
 end
 
----@class Freemaker.FileSystem.Path
+---@class Freemaker.file-system.path
 ---@field private m_nodes string[]
-local Path = {}
+local path = {}
 
 ---@param str string
 ---@return boolean isNode
-function Path.IsNode(str)
+function path.is_node(str)
     if str:find("/") then
         return false
     end
@@ -23,17 +25,17 @@ function Path.IsNode(str)
 end
 
 ---@param pathOrNodes string | string[] | nil
----@return Freemaker.FileSystem.Path
-function Path.new(pathOrNodes)
+---@return Freemaker.file-system.path
+function path.new(pathOrNodes)
     local instance = {}
     if not pathOrNodes then
         instance.m_nodes = {}
-        return setmetatable(instance, { __index = Path })
+        return setmetatable(instance, { __index = path })
     end
 
     if type(pathOrNodes) == "string" then
-        pathOrNodes = formatStr(pathOrNodes)
-        pathOrNodes = Utils.String.Split(pathOrNodes, "/")
+        pathOrNodes = format_str(pathOrNodes)
+        pathOrNodes = utils.string.split(pathOrNodes, "/")
     end
 
     local length = #pathOrNodes
@@ -43,53 +45,53 @@ function Path.new(pathOrNodes)
     end
 
     instance.m_nodes = pathOrNodes
-    instance = setmetatable(instance, { __index = Path })
+    instance = setmetatable(instance, { __index = path })
 
     return instance
 end
 
 ---@return string path
-function Path:ToString()
-    self:Normalize()
-    return Utils.String.Join(self.m_nodes, "/")
+function path:to_string()
+    self:normalize()
+    return table.concat(self.m_nodes, "/")
 end
 
 ---@return boolean
-function Path:IsEmpty()
+function path:empty()
     return #self.m_nodes == 0 or (#self.m_nodes == 2 and self.m_nodes[1] == "" and self.m_nodes[2] == "")
 end
 
 ---@return boolean
-function Path:IsFile()
+function path:is_file()
     return self.m_nodes[#self.m_nodes] ~= ""
 end
 
 ---@return boolean
-function Path:IsDir()
+function path:is_dir()
     return self.m_nodes[#self.m_nodes] == ""
 end
 
-function Path:Exists()
-    return FileSystem.Exists(self:ToString())
+function path:exists()
+    return file_system.exists(self:to_string())
 end
 
 ---@return boolean
-function Path:Create()
-    if self:Exists() then
+function path:create()
+    if self:exists() then
         return true
     end
 
-    if self:IsDir() then
-        return FileSystem.CreateDirectory(self:ToString())
-    elseif self:IsFile() then
-        return FileSystem.CreateFile(self:ToString())
+    if self:is_dir() then
+        return ({ file_system.mkdir(self:to_string()) })[1] or false
+    elseif self:is_file() then
+        return ({ file_system.touch(self:to_string()) })[1] or false
     end
 
     return false
 end
 
 ---@return boolean
-function Path:IsAbsolute()
+function path:is_absolute()
     if #self.m_nodes == 0 then
         return false
     end
@@ -98,26 +100,26 @@ function Path:IsAbsolute()
         return true
     end
 
-    if self.m_nodes[1]:find(":", nil, true) then
+    if self.m_nodes[1]:find(":", nil, true) == 2 then
         return true
     end
 
     return false
 end
 
----@return Freemaker.FileSystem.Path
-function Path:Absolute()
-    local copy = Utils.Table.Copy(self.m_nodes)
+---@return Freemaker.file-system.path
+function path:absolute()
+    local copy = utils.table.copy(self.m_nodes)
 
     for i = 1, #copy, 1 do
         copy[i] = copy[i + 1]
     end
 
-    return Path.new(copy)
+    return path.new(copy)
 end
 
 ---@return boolean
-function Path:IsRelative()
+function path:is_relative()
     if #self.m_nodes == 0 then
         return false
     end
@@ -125,8 +127,8 @@ function Path:IsRelative()
     return self.m_nodes[1] ~= "" and not (self.m_nodes[1]:find(":", nil, true))
 end
 
----@return Freemaker.FileSystem.Path
-function Path:Relative()
+---@return Freemaker.file-system.path
+function path:relative()
     local copy = {}
 
     if self.m_nodes[1] ~= "" then
@@ -136,12 +138,12 @@ function Path:Relative()
         end
     end
 
-    return Path.new(copy)
+    return path.new(copy)
 end
 
 ---@return string
-function Path:GetParentFolder()
-    local copy = Utils.Table.Copy(self.m_nodes)
+function path:get_parent_folder()
+    local copy = utils.table.copy(self.m_nodes)
     local length = #copy
 
     if length > 0 then
@@ -153,12 +155,12 @@ function Path:GetParentFolder()
         end
     end
 
-    return Utils.String.Join(copy, "/")
+    return table.concat(copy, "/")
 end
 
----@return Freemaker.FileSystem.Path
-function Path:GetParentFolderPath()
-    local copy = self:Copy()
+---@return Freemaker.file-system.path
+function path:get_parent_folder_path()
+    local copy = self:copy()
     local length = #copy.m_nodes
 
     if length > 0 then
@@ -174,18 +176,18 @@ function Path:GetParentFolderPath()
 end
 
 ---@return string fileName
-function Path:GetFileName()
-    if not self:IsFile() then
-        error("path is not a file: " .. self:ToString())
+function path:get_file_name()
+    if not self:is_file() then
+        error("path is not a file: " .. self:to_string())
     end
 
     return self.m_nodes[#self.m_nodes]
 end
 
 ---@return string fileExtension
-function Path:GetFileExtension()
-    if not self:IsFile() then
-        error("path is not a file: " .. self:ToString())
+function path:get_file_extension()
+    if not self:is_file() then
+        error("path is not a file: " .. self:to_string())
     end
 
     local fileName = self.m_nodes[#self.m_nodes]
@@ -195,9 +197,9 @@ function Path:GetFileExtension()
 end
 
 ---@return string fileStem
-function Path:GetFileStem()
-    if not self:IsFile() then
-        error("path is not a file: " .. self:ToString())
+function path:get_file_stem()
+    if not self:is_file() then
+        error("path is not a file: " .. self:to_string())
     end
 
     local fileName = self.m_nodes[#self.m_nodes]
@@ -207,9 +209,9 @@ function Path:GetFileStem()
 end
 
 ---@return string folderName
-function Path:GetDirectoryName()
-    if not self:IsDir() then
-        error("path is not a directory: " .. self:ToString())
+function path:get_dir_name()
+    if not self:is_dir() then
+        error("path is not a directory: " .. self:to_string())
     end
 
     if #self.m_nodes < 2 then
@@ -219,8 +221,8 @@ function Path:GetDirectoryName()
     return self.m_nodes[#self.m_nodes - 1]
 end
 
----@return Freemaker.FileSystem.Path
-function Path:Normalize()
+---@return Freemaker.file-system.path
+function path:normalize()
     ---@type string[]
     local newNodes = {}
 
@@ -247,15 +249,16 @@ function Path:Normalize()
     return self
 end
 
----@param path string
----@return Freemaker.FileSystem.Path
-function Path:Append(path)
+---@param ... string
+---@return Freemaker.file-system.path
+function path:append(...)
+    local path_str = table.concat({...}, "/")
     if self.m_nodes[#self.m_nodes] == "" then
         self.m_nodes[#self.m_nodes] = nil
     end
 
-    path = formatStr(path)
-    local newNodes = Utils.String.Split(path, "/")
+    path_str = format_str(path_str)
+    local newNodes = utils.string.split(path_str, "/")
 
     for _, value in ipairs(newNodes) do
         self.m_nodes[#self.m_nodes + 1] = value
@@ -265,22 +268,22 @@ function Path:Append(path)
         self.m_nodes[#self.m_nodes + 1] = ""
     end
 
-    self:Normalize()
+    self:normalize()
 
     return self
 end
 
----@param path string
----@return Freemaker.FileSystem.Path
-function Path:Extend(path)
-    local copy = self:Copy()
-    return copy:Append(path)
+---@param ... string
+---@return Freemaker.file-system.path
+function path:extend(...)
+    local copy = self:copy()
+    return copy:append(...)
 end
 
----@return Freemaker.FileSystem.Path
-function Path:Copy()
-    local copyNodes = Utils.Table.Copy(self.m_nodes)
-    return Path.new(copyNodes)
+---@return Freemaker.file-system.path
+function path:copy()
+    local copyNodes = utils.table.copy(self.m_nodes)
+    return path.new(copyNodes)
 end
 
-return Path
+return path
