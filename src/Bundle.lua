@@ -31,12 +31,12 @@ local current_dir = path.new(file_system.currentdir())
 local parser = argparse("bundle", "Used to bundle a file together by importing the files it uses with require")
 parser:argument("input", "Input file.")
 parser:option("-o --output", "Output file.", "out.lua")
-parser:option("-t --type", "Output type.")
+parser:option("-t --type", "Output type/s."):count("*")
 parser:option("-c --comments", "remove comments (does not remove all comments)", false)
 parser:option("-l --lines", "remove empty lines", false)
 parser:option("-I --include-path", "added search path's for 'require(...)'"):count("*")
 
----@type { input: string, output: string, type: string | nil, comments: boolean, lines: boolean, include_path: string[] }
+---@type { input: string, output: string, type: string[] | nil, comments: boolean, lines: boolean, include_path: string[] }
 local args = parser:parse() -- { "-o", "bin/bundle.lua", "-Ibin", "src/bundle.lua" })
 
 local input_file_path = path.new(args.input)
@@ -387,7 +387,11 @@ end
 bundler.process_file(input_file_path, "__main__")
 
 if args.type then
-    out_file:write("---@type " .. args.type .. "\n")
+    out_file:write("---@type {")
+    for index, type_name in ipairs(args.type) do
+        out_file:write(" [", index, "]: ", type_name, " ")
+    end
+    out_file:write("}\n")
     out_file:write("local main = { __bundler__.__loadFile__(\"__main__\") }\n")
     out_file:write("return table.unpack(main)\n")
 else

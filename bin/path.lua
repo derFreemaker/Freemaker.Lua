@@ -557,6 +557,6 @@ __bundler__.__files__["__main__"] = function()
 
 end
 
----@type Freemaker.file-system.path
+---@type { [1]: Freemaker.file-system.path }
 local main = { __bundler__.__loadFile__("__main__") }
 return table.unpack(main)

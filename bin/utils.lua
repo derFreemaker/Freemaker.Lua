@@ -260,6 +260,6 @@ __bundler__.__files__["__main__"] = function()
 
 end
 
----@type Freemaker.utils
+---@type { [1]: Freemaker.utils }
 local main = { __bundler__.__loadFile__("__main__") }
 return table.unpack(main)
