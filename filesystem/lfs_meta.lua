@@ -50,7 +50,8 @@ function lfs.exists(path) end
 --- Changes the current working directory to the given path.
 --- Returns true in case of success or nil plus an error string.
 ---@param path string
----@return boolean
+---@return boolean | nil
+---@return string | nil
 function lfs.chdir(path) end
 
 
