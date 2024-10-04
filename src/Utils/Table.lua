@@ -1,36 +1,47 @@
 ---@class Freemaker.utils.table
 local table = {}
 
----@param obj table | nil
----@param seen table[]
----@return table | nil
-local function copy_table(obj, copy, seen)
-    if obj == nil then return nil end
-    if seen[obj] then return seen[obj] end
-
-    seen[obj] = copy
-    setmetatable(copy, copy_table(getmetatable(obj), {}, seen))
-
-    for key, value in next, obj, nil do
-        key = (type(key) == "table") and copy_table(key, {}, seen) or key
-        value = (type(value) == "table") and copy_table(value, {}, seen) or value
-        rawset(copy, key, value)
+---@param t table
+---@param copy table
+---@param seen table<table, table>
+local function copy_table_to(t, copy, seen)
+    if seen[t] then
+        return seen[t]
     end
 
-    return copy
+    seen[t] = copy
+
+    for key, value in next, t do
+        if type(value) == "table" then
+            if type(copy[key]) ~= "table" then
+                copy[key] = {}
+            end
+            copy_table_to(copy[key], value, seen)
+        else
+            copy[key] = value
+        end
+    end
+
+    local t_meta = getmetatable(t)
+    if t_meta then
+        local copy_meta = getmetatable(copy) or {}
+        copy_table_to(t_meta, copy_meta, seen)
+        setmetatable(copy, copy_meta)
+    end
 end
 
----@generic TTable
----@param t TTable
----@return TTable table
+---@generic T
+---@param t T
+---@return T table
 function table.copy(t)
-    return copy_table(t, {}, {})
+    return copy_table_to(t, {}, {})
 end
 
----@param from table
----@param to table
+---@generic T
+---@param from T
+---@param to T
 function table.copy_to(from, to)
-    copy_table(from, to, {})
+    copy_table_to(from, to, {})
 end
 
 ---@param t table
