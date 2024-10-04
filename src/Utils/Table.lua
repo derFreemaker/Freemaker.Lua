@@ -16,7 +16,7 @@ local function copy_table_to(t, copy, seen)
             if type(copy[key]) ~= "table" then
                 copy[key] = {}
             end
-            copy_table_to(copy[key], value, seen)
+            copy_table_to(value, copy[key], seen)
         else
             copy[key] = value
         end
