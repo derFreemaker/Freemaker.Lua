@@ -34,7 +34,9 @@ end
 ---@param t T
 ---@return T table
 function table.copy(t)
-    return copy_table_to(t, {}, {})
+    local copy = {}
+    copy_table_to(t, copy, {})
+    return copy
 end
 
 ---@generic T

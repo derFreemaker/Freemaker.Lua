@@ -1680,7 +1680,9 @@ __bundler__.__files__["src.utils.table"] = function()
 	---@param t T
 	---@return T table
 	function table.copy(t)
-	    return copy_table_to(t, {}, {})
+	    local copy = {}
+	    copy_table_to(t, copy, {})
+	    return copy
 	end
 
 	---@generic T
