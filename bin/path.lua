@@ -125,7 +125,7 @@ __bundler__.__files__["src.utils.table"] = function()
 	            if type(copy[key]) ~= "table" then
 	                copy[key] = {}
 	            end
-	            copy_table_to(copy[key], value, seen)
+	            copy_table_to(value, copy[key], seen)
 	        else
 	            copy[key] = value
 	        end
