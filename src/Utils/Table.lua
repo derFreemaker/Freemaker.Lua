@@ -136,4 +136,16 @@ function table.map(t, func)
     return result
 end
 
+---@generic T
+---@param t T
+---@return T
+function table.readonly(t)
+    return setmetatable({}, {
+        __newindex = function()
+            error("this table is readonly")
+        end,
+        __index = t
+    })
+end
+
 return table
