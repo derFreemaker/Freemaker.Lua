@@ -1,7 +1,7 @@
 ---@meta _
 
 ---@class lfs
-lfs = {}
+local lfs = {}
 
 ---@class lfs.attributes
 ---@field dev integer on Unix systems, this represents the device that the inode resides on. On Windows systems, represents the drive number of the disk containing the file
