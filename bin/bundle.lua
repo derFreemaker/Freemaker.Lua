@@ -1794,6 +1794,33 @@ __bundler__.__files__["src.utils.table"] = function()
 	    })
 	end
 
+	---@generic T
+	---@param t T
+	---@param func fun(key: any, value: any) : boolean
+	---@return T
+	function table.select(t, func)
+	    local copy = table.copy(t)
+	    for key, value in pairs(copy) do
+	        if not func(key, value) then
+	            copy[key] = nil
+	        end
+	    end
+	    return copy
+	end
+
+	---@generic T
+	---@param t T
+	---@param func fun(key: any, value: any) : boolean
+	---@return T
+	function table.select_implace(t, func)
+	    for key, value in pairs(t) do
+	        if not func(key, value) then
+	            t[key] = nil
+	        end
+	    end
+	    return t
+	end
+
 	return table
 
 end
@@ -2154,6 +2181,8 @@ __bundler__.__files__["__main__"] = function()
 	    package.cpath = package.cpath:sub(0, package.cpath:find(os_ext, nil, true) - 1)
 	end
 
+	package.path = file_system.currentdir() .. "/?.lua;" .. package.path
+
 	local argparse = __bundler__.__loadFile__("thrid_party.argparse")
 	local utils = __bundler__.__loadFile__("src.utils.init")
 	local path = __bundler__.__loadFile__("src.path")
@@ -2169,7 +2198,7 @@ __bundler__.__files__["__main__"] = function()
 	parser:option("-I --include-path", "added search path's for 'require(...)'"):count("*")
 
 	---@type { input: string, output: string, type: string[] | nil, comments: boolean, lines: boolean, include_path: string[] }
-	local args = parser:parse() -- { "-o", "bin/bundle.lua", "-Ibin", "src/bundle.lua" })
+	local args = parser:parse() -- { "-o", "bin/bundle.lua", "-I./bin", "src/bundle.lua" })
 
 	local input_file_path = path.new(args.input)
 	if input_file_path:is_relative() then
@@ -2197,11 +2226,11 @@ __bundler__.__files__["__main__"] = function()
 	            package.cpath = package.cpath .. ";" .. include .. "/?.so"
 	        end
 	    else
-	        package.path = package.path .. ";./" .. include .. "/?.lua"
+	        package.path = package.path .. ";" .. include .. "/?.lua"
 	        if get_os() == "windows" then
-	            package.cpath = package.cpath .. ";./" .. include .. "/?.dll"
+	            package.cpath = package.cpath .. ";" .. include .. "/?.dll"
 	        else
-	            package.cpath = package.cpath .. ";./" .. include .. "/?.so"
+	            package.cpath = package.cpath .. ";" .. include .. "/?.so"
 	        end
 	    end
 	end
@@ -2241,6 +2270,7 @@ __bundler__.__files__["__main__"] = function()
 	            local replace = false
 	            local binary = false
 	            local file_path = package.searchpath(match, package.path)
+
 	            if file_path then
 	                replace = true
 
@@ -2256,12 +2286,11 @@ __bundler__.__files__["__main__"] = function()
 	                    else
 	                        file_path = file_path:sub(0, file_path:len() - 3)
 	                    end
-	                    file_path = current_dir:to_string() .. file_path
 	                end
 	            end
 
 	            ---@type Freemaker.bundle.require
-	            local data = {
+	            local require_data = {
 	                module = match,
 	                file_path = file_path,
 	                startPos = start_pos,
@@ -2269,7 +2298,7 @@ __bundler__.__files__["__main__"] = function()
 	                replace = replace,
 	                binary = binary
 	            }
-	            table.insert(requires, data)
+	            table.insert(requires, require_data)
 	        end
 
 	        ---@diagnostic disable-next-line: cast-local-type

@@ -257,6 +257,33 @@ __bundler__.__files__["src.utils.table"] = function()
 	    })
 	end
 
+	---@generic T
+	---@param t T
+	---@param func fun(key: any, value: any) : boolean
+	---@return T
+	function table.select(t, func)
+	    local copy = table.copy(t)
+	    for key, value in pairs(copy) do
+	        if not func(key, value) then
+	            copy[key] = nil
+	        end
+	    end
+	    return copy
+	end
+
+	---@generic T
+	---@param t T
+	---@param func fun(key: any, value: any) : boolean
+	---@return T
+	function table.select_implace(t, func)
+	    for key, value in pairs(t) do
+	        if not func(key, value) then
+	            t[key] = nil
+	        end
+	    end
+	    return t
+	end
+
 	return table
 
 end
