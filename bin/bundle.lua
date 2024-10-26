@@ -1832,16 +1832,16 @@ __bundler__.__files__["src.utils.value"] = function()
 	local value = {}
 
 	---@generic T
-	---@param value T
+	---@param x T
 	---@return T
-	function value.copy(value)
-	    local typeStr = type(value)
+	function value.copy(x)
+	    local typeStr = type(x)
 
 	    if typeStr == "table" then
-	        return table.Copy(value)
+	        return table.copy(x)
 	    end
 
-	    return value
+	    return x
 	end
 
 	return value
