@@ -66,4 +66,31 @@ function array.drop_back_implace(t, amount)
     return t
 end
 
+---@generic T
+---@param t T[]
+---@param func fun(key: any, value: T) : boolean
+---@return T[]
+function array.select(t, func)
+    local copy = {}
+    for key, value in pairs(copy) do
+        if func(key, value) then
+            copy[key] = value
+        end
+    end
+    return copy
+end
+
+---@generic T
+---@param t T[]
+---@param func fun(key: any, value: T) : boolean
+---@return T[]
+function array.select_implace(t, func)
+    for key, value in pairs(t) do
+        if not func(key, value) then
+            t[key] = nil
+        end
+    end
+    return t
+end
+
 return array
