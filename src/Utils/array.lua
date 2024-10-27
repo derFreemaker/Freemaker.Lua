@@ -1,3 +1,6 @@
+-- caching globals for more performance
+local table_insert = table.insert
+
 ---@class Freemaker.utils.array
 local array = {}
 
@@ -13,7 +16,7 @@ function array.take_front(t, amount)
 
     local copy = {}
     for i = 1, amount, 1 do
-        table.insert(copy, t[i])
+        table_insert(copy, t[i])
     end
     return copy
 end
@@ -31,7 +34,7 @@ function array.take_back(t, amount)
 
     local copy = {}
     for i = start, length, 1 do
-        table.insert(copy, t[i])
+        table_insert(copy, t[i])
     end
     return copy
 end
@@ -45,7 +48,7 @@ function array.drop_front_implace(t, amount)
         if i <= amount then
             t[i] = nil
         else
-            table.insert(t, value)
+            table_insert(t, value)
             t[i] = nil
         end
     end
@@ -74,7 +77,7 @@ function array.select(t, func)
     local copy = {}
     for key, value in pairs(copy) do
         if func(key, value) then
-            copy[key] = value
+            table_insert(copy, value)
         end
     end
     return copy
@@ -86,7 +89,10 @@ end
 ---@return T[]
 function array.select_implace(t, func)
     for key, value in pairs(t) do
-        if not func(key, value) then
+        if func(key, value) then
+            t[key] = nil
+            table_insert(t, value)
+        else
             t[key] = nil
         end
     end
