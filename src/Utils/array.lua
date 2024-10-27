@@ -1,6 +1,20 @@
 -- caching globals for more performance
 local table_insert = table.insert
 
+---@generic T
+---@param t T[]
+---@param value T
+local function insert_first_nil(t, value)
+    local i = 0
+    while true do
+        i = i + 1
+        if t[i] == nil then
+            t[i] = value
+            return
+        end
+    end
+end
+
 ---@class Freemaker.utils.array
 local array = {}
 
@@ -48,7 +62,7 @@ function array.drop_front_implace(t, amount)
         if i <= amount then
             t[i] = nil
         else
-            table_insert(t, value)
+            insert_first_nil(t, value)
             t[i] = nil
         end
     end
@@ -91,7 +105,7 @@ function array.select_implace(t, func)
     for key, value in pairs(t) do
         if func(key, value) then
             t[key] = nil
-            table_insert(t, value)
+            insert_first_nil(t, value)
         else
             t[key] = nil
         end

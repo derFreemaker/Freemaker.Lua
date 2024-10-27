@@ -1829,6 +1829,20 @@ __bundler__.__files__["src.utils.array"] = function()
 	-- caching globals for more performance
 	local table_insert = table.insert
 
+	---@generic T
+	---@param t T[]
+	---@param value T
+	local function insert_first_nil(t, value)
+	    local i = 0
+	    while true do
+	        i = i + 1
+	        if t[i] == nil then
+	            t[i] = value
+	            return
+	        end
+	    end
+	end
+
 	---@class Freemaker.utils.array
 	local array = {}
 
@@ -1876,7 +1890,7 @@ __bundler__.__files__["src.utils.array"] = function()
 	        if i <= amount then
 	            t[i] = nil
 	        else
-	            table_insert(t, value)
+	            insert_first_nil(t, value)
 	            t[i] = nil
 	        end
 	    end
@@ -1919,7 +1933,7 @@ __bundler__.__files__["src.utils.array"] = function()
 	    for key, value in pairs(t) do
 	        if func(key, value) then
 	            t[key] = nil
-	            table_insert(t, value)
+	            insert_first_nil(t, value)
 	        else
 	            t[key] = nil
 	        end
