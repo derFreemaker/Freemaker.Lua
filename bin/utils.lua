@@ -108,7 +108,7 @@ end
 
 __bundler__.__files__["src.utils.table"] = function()
 	---@class Freemaker.utils.table
-	local table = {}
+	local _table = {}
 
 	---@param t table
 	---@param copy table
@@ -142,7 +142,7 @@ __bundler__.__files__["src.utils.table"] = function()
 	---@generic T
 	---@param t T
 	---@return T table
-	function table.copy(t)
+	function _table.copy(t)
 	    local copy = {}
 	    copy_table_to(t, copy, {})
 	    return copy
@@ -151,20 +151,20 @@ __bundler__.__files__["src.utils.table"] = function()
 	---@generic T
 	---@param from T
 	---@param to T
-	function table.copy_to(from, to)
+	function _table.copy_to(from, to)
 	    copy_table_to(from, to, {})
 	end
 
 	---@param t table
 	---@param ignoreProperties string[] | nil
-	function table.clear(t, ignoreProperties)
+	function _table.clear(t, ignoreProperties)
 	    if not ignoreProperties then
 	        for key, _ in next, t, nil do
 	            t[key] = nil
 	        end
 	    else
 	        for key, _ in next, t, nil do
-	            if not table.contains(ignoreProperties, key) then
+	            if not _table.contains(ignoreProperties, key) then
 	                t[key] = nil
 	            end
 	        end
@@ -176,7 +176,7 @@ __bundler__.__files__["src.utils.table"] = function()
 	---@param t table
 	---@param value any
 	---@return boolean
-	function table.contains(t, value)
+	function _table.contains(t, value)
 	    for _, tValue in pairs(t) do
 	        if value == tValue then
 	            return true
@@ -188,7 +188,7 @@ __bundler__.__files__["src.utils.table"] = function()
 	---@param t table
 	---@param key any
 	---@return boolean
-	function table.contains_key(t, key)
+	function _table.contains_key(t, key)
 	    if t[key] ~= nil then
 	        return true
 	    end
@@ -197,7 +197,7 @@ __bundler__.__files__["src.utils.table"] = function()
 
 	--- removes all spaces between
 	---@param t any[]
-	function table.clean(t)
+	function _table.clean(t)
 	    for key, value in pairs(t) do
 	        for i = key - 1, 1, -1 do
 	            if key ~= 1 then
@@ -213,7 +213,7 @@ __bundler__.__files__["src.utils.table"] = function()
 
 	---@param t table
 	---@return integer count
-	function table.count(t)
+	function _table.count(t)
 	    local count = 0
 	    for _, _ in next, t, nil do
 	        count = count + 1
@@ -223,7 +223,7 @@ __bundler__.__files__["src.utils.table"] = function()
 
 	---@param t table
 	---@return table
-	function table.invert(t)
+	function _table.invert(t)
 	    local inverted = {}
 	    for key, value in pairs(t) do
 	        inverted[value] = key
@@ -236,7 +236,7 @@ __bundler__.__files__["src.utils.table"] = function()
 	---@param t T[]
 	---@param func fun(value: T) : R
 	---@return R[]
-	function table.map(t, func)
+	function _table.map(t, func)
 	    ---@type any[]
 	    local result = {}
 	    for index, value in ipairs(t) do
@@ -248,7 +248,7 @@ __bundler__.__files__["src.utils.table"] = function()
 	---@generic T
 	---@param t T
 	---@return T
-	function table.readonly(t)
+	function _table.readonly(t)
 	    return setmetatable({}, {
 	        __newindex = function()
 	            error("this table is readonly")
@@ -261,8 +261,8 @@ __bundler__.__files__["src.utils.table"] = function()
 	---@param t T
 	---@param func fun(key: any, value: any) : boolean
 	---@return T
-	function table.select(t, func)
-	    local copy = table.copy(t)
+	function _table.select(t, func)
+	    local copy = _table.copy(t)
 	    for key, value in pairs(copy) do
 	        if not func(key, value) then
 	            copy[key] = nil
@@ -275,7 +275,7 @@ __bundler__.__files__["src.utils.table"] = function()
 	---@param t T
 	---@param func fun(key: any, value: any) : boolean
 	---@return T
-	function table.select_implace(t, func)
+	function _table.select_implace(t, func)
 	    for key, value in pairs(t) do
 	        if not func(key, value) then
 	            t[key] = nil
@@ -284,7 +284,80 @@ __bundler__.__files__["src.utils.table"] = function()
 	    return t
 	end
 
-	return table
+	return _table
+
+end
+
+__bundler__.__files__["src.utils.array"] = function()
+	---@class Freemaker.utils.array
+	local array = {}
+
+	---@generic T
+	---@param t T[]
+	---@param amount integer
+	---@return T[]
+	function array.take_front(t, amount)
+	    local length = #t
+	    if amount > length then
+	        amount = length
+	    end
+
+	    local copy = {}
+	    for i = 1, amount, 1 do
+	        table.insert(copy, t[i])
+	    end
+	    return copy
+	end
+
+	---@generic T
+	---@param t T[]
+	---@param amount integer
+	---@return T[]
+	function array.take_back(t, amount)
+	    local length = #t
+	    local start = #t - amount + 1
+	    if start < 1 then
+	        start = 1
+	    end
+
+	    local copy = {}
+	    for i = start, length, 1 do
+	        table.insert(copy, t[i])
+	    end
+	    return copy
+	end
+
+	---@generic T
+	---@param t T[]
+	---@param amount integer
+	---@return T[]
+	function array.drop_front_implace(t, amount)
+	    for i, value in ipairs(t) do
+	        if i <= amount then
+	            t[i] = nil
+	        else
+	            table.insert(t, value)
+	            t[i] = nil
+	        end
+	    end
+	    return t
+	end
+
+	---@generic T
+	---@param t T[]
+	---@param amount integer
+	---@return T[]
+	function array.drop_back_implace(t, amount)
+	    local length = #t
+	    local start = length - amount + 1
+
+	    for i = start, length, 1 do
+	        t[i] = nil
+	    end
+	    return t
+	end
+
+	return array
 
 end
 
@@ -315,11 +388,13 @@ __bundler__.__files__["__main__"] = function()
 	---@class Freemaker.utils
 	---@field string Freemaker.utils.string
 	---@field table Freemaker.utils.table
+	---@field array Freemaker.utils.array
 	---@field value Freemaker.utils.value
 	local utils = {}
 
 	utils.string = __bundler__.__loadFile__("src.utils.string")
 	utils.table = __bundler__.__loadFile__("src.utils.table")
+	utils.array = __bundler__.__loadFile__("src.utils.array")
 	utils.value = __bundler__.__loadFile__("src.utils.value")
 
 	return utils
