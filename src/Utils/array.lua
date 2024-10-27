@@ -75,7 +75,7 @@ end
 ---@return T[]
 function array.select(t, func)
     local copy = {}
-    for key, value in pairs(copy) do
+    for key, value in pairs(t) do
         if func(key, value) then
             table_insert(copy, value)
         end
