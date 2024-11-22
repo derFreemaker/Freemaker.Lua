@@ -16,7 +16,7 @@ function __bundler__.__loadFile__(module)
     if not __bundler__.__cache__[module] then
         if __bundler__.__binary_files__[module] then
             local os_type = __bundler__.__get_os__()
-            local file_path = os.tmpname()
+            local file_path = "." .. os.tmpname()
             local file = io.open(file_path, "wb")
             if not file then
                 error("unable to open file: " .. file_path)
@@ -2652,7 +2652,7 @@ __bundler__.__files__["__main__"] = function()
 	    if not __bundler__.__cache__[module] then
 	        if __bundler__.__binary_files__[module] then
 	            local os_type = __bundler__.__get_os__()
-	            local file_path = os.tmpname()
+	            local file_path = "." .. os.tmpname()
 	            local file = io.open(file_path, "wb")
 	            if not file then
 	                error("unable to open file: " .. file_path)
