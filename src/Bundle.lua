@@ -6,29 +6,19 @@ local function get_os()
     end
 end
 
----@type lfs
-local file_system
-if __bundler__ then
-    file_system = require("lfs")
-else
-    local os_ext = ""
-    if get_os() == "windows" then
-        os_ext = ";./bin/?.dll"
-    else
-        os_ext = ";./bin/?.so"
-    end
-    package.cpath = package.cpath .. os_ext
-    file_system = require("lfs")
-    package.cpath = package.cpath:sub(0, package.cpath:find(os_ext, nil, true) - 1)
-end
+package.path = "./?.lua;" .. package.path
 
-package.path = file_system.currentdir() .. "/?.lua;" .. package.path
+if get_os() == "windows" then
+    package.cpath = "./bin/?.dll;" .. package.cpath
+else
+    package.cpath = "./bin/?.so;" .. package.cpath 
+end
 
 local argparse = require("thrid_party.argparse")
 local utils = require("src.utils.init")
 local path = require("src.path")
 
-local current_dir = path.new(file_system.currentdir())
+local current_dir = path.new(".")
 
 local parser = argparse("bundle", "Used to bundle a file together by importing the files it uses with require")
 parser:argument("input", "Input file.")
@@ -247,11 +237,8 @@ function bundler.process_file(file_path, module, binary)
         if not cache[module .. ".so"] then
             local file_path_str = file_path:to_string()
             file_path_str = file_path_str:sub(0, file_path_str:len() - 1) .. ".so"
-            if file_system.exists(file_path_str) then
-                local file = io.open(file_path_str, "rb")
-                if not file then
-                    error("unable to open: " .. file_path:to_string())
-                end
+            local file = io.open(file_path_str, "rb")
+            if file then
                 local content = file:read("a")
                 file:close()
 
@@ -270,11 +257,8 @@ function bundler.process_file(file_path, module, binary)
         if not cache[module .. ".dll"] then
             local file_path_str = file_path:to_string()
             file_path_str = file_path_str:sub(0, file_path_str:len() - 1) .. ".dll"
-            if file_system.exists(file_path_str) then
-                local file = io.open(file_path_str, "rb")
-                if not file then
-                    error("unable to open: " .. file_path:to_string())
-                end
+            local file = io.open(file_path_str, "rb")
+            if file then
                 local content = file:read("a")
                 file:close()
 
