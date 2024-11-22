@@ -1,5 +1,5 @@
 ---@class Freemaker.utils.string
-local string = {}
+local _string = {}
 
 ---@param str string
 ---@param pattern string
@@ -17,7 +17,7 @@ end
 ---@param sep string | nil
 ---@param plain boolean | nil
 ---@return string[]
-function string.split(str, sep, plain)
+function _string.split(str, sep, plain)
     if str == nil then
         return {}
     end
@@ -50,7 +50,7 @@ end
 
 ---@param str string | nil
 ---@return boolean
-function string.is_nil_or_empty(str)
+function _string.is_nil_or_empty(str)
     if str == nil then
         return true
     end
@@ -60,4 +60,4 @@ function string.is_nil_or_empty(str)
     return false
 end
 
-return string
+return _string
