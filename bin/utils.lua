@@ -469,18 +469,12 @@ __bundler__.__files__["src.utils.value"] = function()
 
 	---@param value number
 	---@param min number
+	---@param max number
 	---@return number
-	function _value.min(value, min)
+	function _value.clamp(value, min, max)
 	    if value < min then
 	        return min
 	    end
-	    return value
-	end
-
-	---@param value number
-	---@param max number
-	---@return number
-	function _value.max(value, max)
 	    if value > max then
 	        return max
 	    end
