@@ -244,12 +244,12 @@ function bundler.process_file(file_path, module, binary)
 
                 local bytes = {}
                 for i = 1, #content do
-                    bytes[#bytes + 1] = string.format("\"%02X\"", string.byte(content, i))
+                    bytes[#bytes + 1] = string.format("%02X", string.byte(content, i))
                 end
-                content = table.concat(bytes, ",")
+                content = table.concat(bytes)
 
                 cache[module .. ".so"] = true
-                out_file:write("__bundler__.__files__[\"", module, ".so\"] = {", content, "}\n")
+                out_file:write("__bundler__.__files__[\"", module, ".so\"] = [[", content, "]]\n")
             end
             did = true
         end
@@ -264,12 +264,12 @@ function bundler.process_file(file_path, module, binary)
 
                 local bytes = {}
                 for i = 1, #content do
-                    bytes[#bytes + 1] = string.format("\"%02X\"", string.byte(content, i))
+                    bytes[#bytes + 1] = string.format("%02X", string.byte(content, i))
                 end
-                content = table.concat(bytes, ",")
+                content = table.concat(bytes)
 
                 cache[module .. ".dll"] = true
-                out_file:write("__bundler__.__files__[\"", module, ".dll\"] = {", content, "}\n")
+                out_file:write("__bundler__.__files__[\"", module, ".dll\"] = [[", content, "]]\n")
             end
             did = true
         end
@@ -333,6 +333,8 @@ local __bundler__ = {
     __files__ = {},
     __binary_files__ = {},
     __cache__ = {},
+    __temp_files__ = {},
+    __org_exit__ = os.exit
 }
 function __bundler__.__get_os__()
     if package.config:sub(1, 1) == '\\' then
@@ -344,8 +346,12 @@ end
 function __bundler__.__loadFile__(module)
     if not __bundler__.__cache__[module] then
         if __bundler__.__binary_files__[module] then
+        local tempDir = os.getenv("TEMP") or os.getenv("TMP")
+            if not tempDir then
+                tempDir = "/tmp"
+            end
             local os_type = __bundler__.__get_os__()
-            local file_path = "." .. os.tmpname()
+            local file_path = tempDir .. os.tmpname()
             local file = io.open(file_path, "wb")
             if not file then
                 error("unable to open file: " .. file_path)
@@ -356,17 +362,41 @@ function __bundler__.__loadFile__(module)
             else
                 content = __bundler__.__files__[module .. ".so"]
             end
-            for i = 1, #content do
-                local byte = tonumber(content[i], 16)
+            local content_len = content:len()
+            for i = 2, content_len, 2 do
+                local byte = tonumber(content:sub(i - 1, i), 16)
                 file:write(string.char(byte))
             end
             file:close()
             __bundler__.__cache__[module] = { package.loadlib(file_path, "luaopen_" .. module)() }
+            table.insert(__bundler__.__temp_files__, file_path)
         else
             __bundler__.__cache__[module] = { __bundler__.__files__[module]() }
         end
     end
     return table.unpack(__bundler__.__cache__[module])
+end
+function __bundler__.__cleanup__()
+    for _, file_path in ipairs(__bundler__.__temp_files__) do
+        os.remove(file_path)
+    end
+end
+---@diagnostic disable-next-line: duplicate-set-field
+function os.exit(...)
+    __bundler__.__cleanup__()
+    __bundler__.__org_exit__(...)
+end
+function __bundler__.__main__()
+    local loading_thread = coroutine.create(__bundler__.__loadFile__)
+    local success, items = (function(success, ...) return success, {...} end)
+        (coroutine.resume(loading_thread, "__main__"))
+    if not success then
+        print("error in bundle loading thread:\n"
+            .. debug.traceback(loading_thread, items[1]))
+    end
+    coroutine.close(loading_thread)
+    __bundler__.__cleanup__()
+    return table.unpack(items)
 end
 ]])
 
@@ -378,10 +408,10 @@ if args.type then
         out_file:write(" [", index, "]: ", type_name, " ")
     end
     out_file:write("}\n")
-    out_file:write("local main = { __bundler__.__loadFile__(\"__main__\") }\n")
+    out_file:write("local main = { __bundler__.__main__() }\n")
     out_file:write("return table.unpack(main)\n")
 else
-    out_file:write("return __bundler__.__loadFile__(\"__main__\")\n")
+    out_file:write("return __bundler__.__main__()\n")
 end
 
 out_file:close()
