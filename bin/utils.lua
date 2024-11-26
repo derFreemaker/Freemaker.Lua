@@ -65,7 +65,6 @@ function __bundler__.__main__()
         print("error in bundle loading thread:\n"
             .. debug.traceback(loading_thread, items[1]))
     end
-    coroutine.close(loading_thread)
     __bundler__.__cleanup__()
     return table.unpack(items)
 end

@@ -1,5 +1,4 @@
 {
-	"Lua.workspace.ignoreDir": [".vscode", "bin"],
 	"files.exclude": {
 		"**/.git": true,
 		"**/.svn": true,
@@ -11,7 +10,4 @@
 		".stignore": true,
 		"LICENSE": true
 	},
-	"Lua.diagnostics.globals": [
-		"__bundler__"
-	]
 }
