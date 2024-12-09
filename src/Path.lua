@@ -1,7 +1,7 @@
 local utils = require("src.utils.init")
 
 ---@type lfs
-local file_system = require("lfs")
+local file_system = require("bin.lfs")
 
 ---@param str string
 ---@return string str

@@ -8,12 +8,6 @@ end
 
 package.path = "./?.lua;" .. package.path
 
-if get_os() == "windows" then
-    package.cpath = "./bin/?.dll;" .. package.cpath
-else
-    package.cpath = "./bin/?.so;" .. package.cpath 
-end
-
 local argparse = require("thrid_party.argparse")
 local utils = require("src.utils.init")
 local path = require("src.path")
@@ -46,6 +40,8 @@ if not out_file then
     error("unable to open output: " .. output_file_path:to_string())
 end
 
+package.path = ""
+package.cpath = ""
 for _, include in ipairs(args.include_path) do
     local include_path = path.new(include)
 
