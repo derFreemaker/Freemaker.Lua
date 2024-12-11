@@ -6,7 +6,7 @@
         "bin"
     ],
     "runtime.path": [
-        "?.lua"
+        "./?.lua"
     ],
     "runtime.pathStrict": true,
     "diagnostics.globals": [

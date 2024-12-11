@@ -2087,12 +2087,6 @@ __bundler__.__files__["src.path"] = function()
 	        pathOrNodes = utils.string.split(pathOrNodes, "/")
 	    end
 
-	    local length = #pathOrNodes
-	    local node = pathOrNodes[length]
-	    if node and node ~= "" and not node:find("^.+%..+$") then
-	        pathOrNodes[length + 1] = ""
-	    end
-
 	    instance.m_nodes = pathOrNodes
 	    instance = setmetatable(instance, { __index = path })
 
@@ -2311,10 +2305,6 @@ __bundler__.__files__["src.path"] = function()
 
 	    for _, value in ipairs(newNodes) do
 	        self.m_nodes[#self.m_nodes + 1] = value
-	    end
-
-	    if self.m_nodes[#self.m_nodes] ~= "" and not self.m_nodes[#self.m_nodes]:find("^.+%..+$") then
-	        self.m_nodes[#self.m_nodes + 1] = ""
 	    end
 
 	    self:normalize()
