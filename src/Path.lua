@@ -69,10 +69,15 @@ function path:exists()
     return file_system.exists(self:to_string())
 end
 
+---@param all boolean | nil
 ---@return boolean
-function path:create()
+function path:create(all)
     if self:exists() then
         return true
+    end
+
+    if all and #self.m_nodes > 1 then
+        self:get_parent_folder_path():create(all)
     end
 
     if self:is_dir() then
