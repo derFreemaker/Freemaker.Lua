@@ -605,6 +605,41 @@ __bundler__.__files__["__main__"] = function()
 	    return false
 	end
 
+	---@param all boolean | nil
+	---@return boolean
+	function path:remove(all)
+	    if not self:exists() then
+	        return true
+	    end
+
+	    if self:is_file() then
+	        local success = os.remove(self:to_string())
+	        return success
+	    end
+
+	    if self:is_dir() then
+	        for child in file_system.dir(self:to_string()) do
+	            if not all then
+	                return false
+	            end
+
+	            local child_path = self:extend(child)
+	            if file_system.attributes(child_path:to_string()).mode == "directory" then
+	                child_path:append("/")
+	            end
+
+	            if not child_path:remove(all) then
+	                return false
+	            end
+	        end
+
+	        local success = file_system.rmdir(self:to_string())
+	        return success or false
+	    end
+
+	    return false
+	end
+
 	---@return boolean
 	function path:is_absolute()
 	    if #self.m_nodes == 0 then
