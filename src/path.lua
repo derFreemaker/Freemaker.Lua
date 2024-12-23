@@ -103,6 +103,11 @@ function path:remove(all)
 
     if self:is_dir() then
         for child in file_system.dir(self:to_string()) do
+            if child == "."
+                or child == ".." then
+                goto continue
+            end
+
             if not all then
                 return false
             end
@@ -115,6 +120,7 @@ function path:remove(all)
             if not child_path:remove(all) then
                 return false
             end
+            ::continue::
         end
 
         local success = file_system.rmdir(self:to_string())
@@ -286,7 +292,7 @@ end
 ---@param ... string
 ---@return Freemaker.file-system.path
 function path:append(...)
-    local path_str = table.concat({...}, "/")
+    local path_str = table.concat({ ... }, "/")
     if self.m_nodes[#self.m_nodes] == "" then
         self.m_nodes[#self.m_nodes] = nil
     end
