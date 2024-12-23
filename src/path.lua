@@ -202,7 +202,7 @@ function path:get_parent_folder_path()
             copy.m_nodes[length] = nil
             copy.m_nodes[length - 1] = ""
         else
-            copy.m_nodes[length] = nil
+            copy.m_nodes[length] = ""
         end
     end
 

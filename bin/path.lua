@@ -140,41 +140,39 @@ __bundler__.__files__["src.utils.table"] = function()
 	local _table = {}
 
 	---@param t table
-	---@param copy table
-	---@param seen table<table, table>
-	local function copy_table_to(t, copy, seen)
-	    if seen[t] then
-	        return seen[t]
-	    end
+		---@param copy table
+		---@param seen table<table, table>
+		---@return table
+		local function copy_table_to(t, copy, seen)
+		    if seen[t] then
+		        return seen[t]
+		    end
 
-	    seen[t] = copy
+		    seen[t] = copy
 
-	    for key, value in next, t do
-	        if type(value) == "table" then
-	            if type(copy[key]) ~= "table" then
-	                copy[key] = {}
-	            end
-	            copy_table_to(value, copy[key], seen)
-	        else
-	            copy[key] = value
-	        end
-	    end
+		    for key, value in next, t do
+		        if type(value) == "table" then
+					copy[key] = copy_table_to(value, copy[key] or {}, seen)
+		        else
+		            copy[key] = value
+		        end
+		    end
 
-	    local t_meta = getmetatable(t)
-	    if t_meta then
-	        local copy_meta = getmetatable(copy) or {}
-	        copy_table_to(t_meta, copy_meta, seen)
-	        setmetatable(copy, copy_meta)
-	    end
-	end
+		    local t_meta = getmetatable(t)
+		    if t_meta then
+		        local copy_meta = getmetatable(copy) or {}
+		        copy_table_to(t_meta, copy_meta, seen)
+		        setmetatable(copy, copy_meta)
+		    end
+
+			return copy
+		end
 
 	---@generic T
 	---@param t T
 	---@return T table
 	function _table.copy(t)
-	    local copy = {}
-	    copy_table_to(t, copy, {})
-	    return copy
+	    return copy_table_to(t, {}, {})
 	end
 
 	---@generic T
@@ -718,7 +716,7 @@ __bundler__.__files__["__main__"] = function()
 	            copy.m_nodes[length] = nil
 	            copy.m_nodes[length - 1] = ""
 	        else
-	            copy.m_nodes[length] = nil
+	            copy.m_nodes[length] = ""
 	        end
 	    end
 
