@@ -526,11 +526,11 @@ __bundler__.__files__["__main__"] = function()
 
 	---@class Freemaker.file-system.path
 	---@field private m_nodes string[]
-	local path = {}
+	local _path = {}
 
 	---@param str string
 	---@return boolean isNode
-	function path.is_node(str)
+	function _path.is_node(str)
 	    if str:find("/") then
 	        return false
 	    end
@@ -540,11 +540,11 @@ __bundler__.__files__["__main__"] = function()
 
 	---@param pathOrNodes string | string[] | nil
 	---@return Freemaker.file-system.path
-	function path.new(pathOrNodes)
+	function _path.new(pathOrNodes)
 	    local instance = {}
 	    if not pathOrNodes then
 	        instance.m_nodes = {}
-	        return setmetatable(instance, { __index = path })
+	        return setmetatable(instance, { __index = _path })
 	    end
 
 	    if type(pathOrNodes) == "string" then
@@ -553,45 +553,53 @@ __bundler__.__files__["__main__"] = function()
 	    end
 
 	    instance.m_nodes = pathOrNodes
-	    instance = setmetatable(instance, { __index = path })
+	    instance = setmetatable(instance, { __index = _path })
 
 	    return instance
 	end
 
 	---@return string path
-	function path:to_string()
+	function _path:to_string()
 	    self:normalize()
 	    return table.concat(self.m_nodes, "/")
 	end
 
 	---@return boolean
-	function path:empty()
+	function _path:empty()
 	    return #self.m_nodes == 0 or (#self.m_nodes == 2 and self.m_nodes[1] == "" and self.m_nodes[2] == "")
 	end
 
 	---@return boolean
-	function path:is_file()
+	function _path:is_file()
 	    return self.m_nodes[#self.m_nodes] ~= ""
 	end
 
 	---@return boolean
-	function path:is_dir()
+	function _path:is_dir()
 	    return self.m_nodes[#self.m_nodes] == ""
 	end
 
-	function path:exists()
-	    return file_system.exists(self:to_string())
+	function _path:exists()
+	    local path = self:to_string()
+
+	    if self:is_dir() then
+	        path = path:sub(0, -2)
+	    end
+
+	    return file_system.exists(path)
 	end
 
 	---@param all boolean | nil
 	---@return boolean
-	function path:create(all)
+	function _path:create(all)
 	    if self:exists() then
 	        return true
 	    end
 
 	    if all and #self.m_nodes > 1 then
-	        self:get_parent_folder_path():create(all)
+	        if not self:get_parent_folder_path():create(all) then
+	            return false
+	        end
 	    end
 
 	    if self:is_dir() then
@@ -605,7 +613,7 @@ __bundler__.__files__["__main__"] = function()
 
 	---@param all boolean | nil
 	---@return boolean
-	function path:remove(all)
+	function _path:remove(all)
 	    if not self:exists() then
 	        return true
 	    end
@@ -645,7 +653,7 @@ __bundler__.__files__["__main__"] = function()
 	end
 
 	---@return boolean
-	function path:is_absolute()
+	function _path:is_absolute()
 	    if #self.m_nodes == 0 then
 	        return false
 	    end
@@ -662,18 +670,18 @@ __bundler__.__files__["__main__"] = function()
 	end
 
 	---@return Freemaker.file-system.path
-	function path:absolute()
+	function _path:absolute()
 	    local copy = utils.table.copy(self.m_nodes)
 
 	    for i = 1, #copy, 1 do
 	        copy[i] = copy[i + 1]
 	    end
 
-	    return path.new(copy)
+	    return _path.new(copy)
 	end
 
 	---@return boolean
-	function path:is_relative()
+	function _path:is_relative()
 	    if #self.m_nodes == 0 then
 	        return false
 	    end
@@ -682,7 +690,7 @@ __bundler__.__files__["__main__"] = function()
 	end
 
 	---@return Freemaker.file-system.path
-	function path:relative()
+	function _path:relative()
 	    local copy = {}
 
 	    if self.m_nodes[1] ~= "" then
@@ -692,11 +700,11 @@ __bundler__.__files__["__main__"] = function()
 	        end
 	    end
 
-	    return path.new(copy)
+	    return _path.new(copy)
 	end
 
 	---@return string
-	function path:get_parent_folder()
+	function _path:get_parent_folder()
 	    local copy = utils.table.copy(self.m_nodes)
 	    local length = #copy
 
@@ -713,7 +721,7 @@ __bundler__.__files__["__main__"] = function()
 	end
 
 	---@return Freemaker.file-system.path
-	function path:get_parent_folder_path()
+	function _path:get_parent_folder_path()
 	    local copy = self:copy()
 	    local length = #copy.m_nodes
 
@@ -730,7 +738,7 @@ __bundler__.__files__["__main__"] = function()
 	end
 
 	---@return string fileName
-	function path:get_file_name()
+	function _path:get_file_name()
 	    if not self:is_file() then
 	        error("path is not a file: " .. self:to_string())
 	    end
@@ -739,7 +747,7 @@ __bundler__.__files__["__main__"] = function()
 	end
 
 	---@return string fileExtension
-	function path:get_file_extension()
+	function _path:get_file_extension()
 	    if not self:is_file() then
 	        error("path is not a file: " .. self:to_string())
 	    end
@@ -751,7 +759,7 @@ __bundler__.__files__["__main__"] = function()
 	end
 
 	---@return string fileStem
-	function path:get_file_stem()
+	function _path:get_file_stem()
 	    if not self:is_file() then
 	        error("path is not a file: " .. self:to_string())
 	    end
@@ -763,7 +771,7 @@ __bundler__.__files__["__main__"] = function()
 	end
 
 	---@return string folderName
-	function path:get_dir_name()
+	function _path:get_dir_name()
 	    if not self:is_dir() then
 	        error("path is not a directory: " .. self:to_string())
 	    end
@@ -776,7 +784,7 @@ __bundler__.__files__["__main__"] = function()
 	end
 
 	---@return Freemaker.file-system.path
-	function path:normalize()
+	function _path:normalize()
 	    ---@type string[]
 	    local newNodes = {}
 
@@ -805,7 +813,7 @@ __bundler__.__files__["__main__"] = function()
 
 	---@param ... string
 	---@return Freemaker.file-system.path
-	function path:append(...)
+	function _path:append(...)
 	    local path_str = table.concat({ ... }, "/")
 	    if self.m_nodes[#self.m_nodes] == "" then
 	        self.m_nodes[#self.m_nodes] = nil
@@ -825,18 +833,18 @@ __bundler__.__files__["__main__"] = function()
 
 	---@param ... string
 	---@return Freemaker.file-system.path
-	function path:extend(...)
+	function _path:extend(...)
 	    local copy = self:copy()
 	    return copy:append(...)
 	end
 
 	---@return Freemaker.file-system.path
-	function path:copy()
+	function _path:copy()
 	    local copyNodes = utils.table.copy(self.m_nodes)
-	    return path.new(copyNodes)
+	    return _path.new(copyNodes)
 	end
 
-	return path
+	return _path
 
 end
 
