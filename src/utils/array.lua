@@ -16,13 +16,13 @@ local function insert_first_nil(t, value)
 end
 
 ---@class Freemaker.utils.array
-local array = {}
+local _array = {}
 
 ---@generic T
 ---@param t T[]
 ---@param amount integer
 ---@return T[]
-function array.take_front(t, amount)
+function _array.take_front(t, amount)
     local length = #t
     if amount > length then
         amount = length
@@ -39,7 +39,7 @@ end
 ---@param t T[]
 ---@param amount integer
 ---@return T[]
-function array.take_back(t, amount)
+function _array.take_back(t, amount)
     local length = #t
     local start = #t - amount + 1
     if start < 1 then
@@ -57,7 +57,7 @@ end
 ---@param t T[]
 ---@param amount integer
 ---@return T[]
-function array.drop_front_implace(t, amount)
+function _array.drop_front_implace(t, amount)
     for i, value in ipairs(t) do
         if i <= amount then
             t[i] = nil
@@ -73,7 +73,7 @@ end
 ---@param t T[]
 ---@param amount integer
 ---@return T[]
-function array.drop_back_implace(t, amount)
+function _array.drop_back_implace(t, amount)
     local length = #t
     local start = length - amount + 1
 
@@ -84,33 +84,32 @@ function array.drop_back_implace(t, amount)
 end
 
 ---@generic T
+---@generic R
 ---@param t T[]
----@param func fun(key: any, value: T) : boolean
----@return T[]
-function array.select(t, func)
+---@param func fun(index: integer, value: T) : R
+---@return R[]
+function _array.select(t, func)
     local copy = {}
-    for key, value in pairs(t) do
-        if func(key, value) then
-            table_insert(copy, value)
-        end
+    for index, value in pairs(t) do
+        table_insert(copy, func(index, value))
     end
     return copy
 end
 
 ---@generic T
+---@generic R
 ---@param t T[]
----@param func fun(key: any, value: T) : boolean
----@return T[]
-function array.select_implace(t, func)
-    for key, value in pairs(t) do
-        if func(key, value) then
-            t[key] = nil
-            insert_first_nil(t, value)
-        else
-            t[key] = nil
+---@param func fun(index: integer, value: T) : R
+---@return R[]
+function _array.select_implace(t, func)
+    for index, value in pairs(t) do
+        local new_value = func(index, value)
+        t[index] = nil
+        if new_value then
+            insert_first_nil(t, new_value)
         end
     end
     return t
 end
 
-return array
+return _array

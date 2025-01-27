@@ -60,4 +60,20 @@ function _string.is_nil_or_empty(str)
     return false
 end
 
+---@param str string
+---@param length integer
+---@param char string | nil
+function _string.left_pad(str, length, char)
+    local str_length = str:len()
+    return string.rep(char or " ", length - str_length) .. str
+end
+
+---@param str string
+---@param length integer
+---@param char string | nil
+function _string.right_pad(str, length, char)
+    local str_length = str:len()
+    return str .. string.rep(char or " ", length - str_length)
+end
+
 return _string

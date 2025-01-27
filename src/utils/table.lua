@@ -147,9 +147,10 @@ function _table.readonly(t)
 end
 
 ---@generic T
+---@generic R
 ---@param t T
----@param func fun(key: any, value: any) : boolean
----@return T
+---@param func fun(key: any, value: any) : R
+---@return R[]
 function _table.select(t, func)
     local copy = _table.copy(t)
     for key, value in pairs(copy) do
@@ -161,9 +162,10 @@ function _table.select(t, func)
 end
 
 ---@generic T
+---@generic R
 ---@param t T
----@param func fun(key: any, value: any) : boolean
----@return T
+---@param func fun(key: any, value: any) : R
+---@return R[]
 function _table.select_implace(t, func)
     for key, value in pairs(t) do
         if not func(key, value) then

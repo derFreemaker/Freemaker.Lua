@@ -57,18 +57,26 @@ end
 
 ---@return boolean
 function _path:is_file()
-    return self.m_nodes[#self.m_nodes] ~= ""
+    if self.m_nodes[#self.m_nodes] == "" then
+        return false
+    end
+
+    return file_system.attributes(self:to_string(), "mode") == "file"
 end
 
 ---@return boolean
 function _path:is_dir()
-    return self.m_nodes[#self.m_nodes] == ""
+    local path = self:to_string()
+    if self.m_nodes[#self.m_nodes] == "" then
+        path = path:sub(0, -2)
+    end
+
+    return file_system.attributes(path, "mode") == "directory"
 end
 
 function _path:exists()
     local path = self:to_string()
-
-    if self:is_dir() then
+    if self.m_nodes[#self.m_nodes] == "" then
         path = path:sub(0, -2)
     end
 

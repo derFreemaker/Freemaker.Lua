@@ -68,6 +68,34 @@ function __bundler__.__main__()
     __bundler__.__cleanup__()
     return table.unpack(items)
 end
+__bundler__.__files__["src.utils.number"] = function()
+	---@class Freemaker.utils.number
+	local _number = {}
+
+	---@type table<integer, integer>
+	local round_cache = {}
+
+	---@param value number
+	---@param decimal integer
+	---@return integer
+	function _number.round(value, decimal)
+	    if decimal > 308 then
+	        error("cannot round more decimals than 308")
+	    end
+
+	    local mult = round_cache[decimal]
+	    if not mult then
+	        mult = 10 ^ decimal
+	        round_cache[decimal] = mult
+	    end
+
+	    return ((value * mult + 0.5) // 1) / mult
+	end
+
+	return _number
+
+end
+
 __bundler__.__files__["src.utils.string"] = function()
 	---@class Freemaker.utils.string
 	local _string = {}
@@ -129,6 +157,22 @@ __bundler__.__files__["src.utils.string"] = function()
 	        return true
 	    end
 	    return false
+	end
+
+	---@param str string
+	---@param length integer
+	---@param char string | nil
+	function _string.left_pad(str, length, char)
+	    local str_length = str:len()
+	    return string.rep(char or " ", length - str_length) .. str
+	end
+
+	---@param str string
+	---@param length integer
+	---@param char string | nil
+	function _string.right_pad(str, length, char)
+	    local str_length = str:len()
+	    return str .. string.rep(char or " ", length - str_length)
 	end
 
 	return _string
@@ -285,9 +329,10 @@ __bundler__.__files__["src.utils.table"] = function()
 	end
 
 	---@generic T
+	---@generic R
 	---@param t T
-	---@param func fun(key: any, value: any) : boolean
-	---@return T
+	---@param func fun(key: any, value: any) : R
+	---@return R[]
 	function _table.select(t, func)
 	    local copy = _table.copy(t)
 	    for key, value in pairs(copy) do
@@ -299,9 +344,10 @@ __bundler__.__files__["src.utils.table"] = function()
 	end
 
 	---@generic T
+	---@generic R
 	---@param t T
-	---@param func fun(key: any, value: any) : boolean
-	---@return T
+	---@param func fun(key: any, value: any) : R
+	---@return R[]
 	function _table.select_implace(t, func)
 	    for key, value in pairs(t) do
 	        if not func(key, value) then
@@ -334,13 +380,13 @@ __bundler__.__files__["src.utils.array"] = function()
 	end
 
 	---@class Freemaker.utils.array
-	local array = {}
+	local _array = {}
 
 	---@generic T
 	---@param t T[]
 	---@param amount integer
 	---@return T[]
-	function array.take_front(t, amount)
+	function _array.take_front(t, amount)
 	    local length = #t
 	    if amount > length then
 	        amount = length
@@ -357,7 +403,7 @@ __bundler__.__files__["src.utils.array"] = function()
 	---@param t T[]
 	---@param amount integer
 	---@return T[]
-	function array.take_back(t, amount)
+	function _array.take_back(t, amount)
 	    local length = #t
 	    local start = #t - amount + 1
 	    if start < 1 then
@@ -375,7 +421,7 @@ __bundler__.__files__["src.utils.array"] = function()
 	---@param t T[]
 	---@param amount integer
 	---@return T[]
-	function array.drop_front_implace(t, amount)
+	function _array.drop_front_implace(t, amount)
 	    for i, value in ipairs(t) do
 	        if i <= amount then
 	            t[i] = nil
@@ -391,7 +437,7 @@ __bundler__.__files__["src.utils.array"] = function()
 	---@param t T[]
 	---@param amount integer
 	---@return T[]
-	function array.drop_back_implace(t, amount)
+	function _array.drop_back_implace(t, amount)
 	    local length = #t
 	    local start = length - amount + 1
 
@@ -402,36 +448,35 @@ __bundler__.__files__["src.utils.array"] = function()
 	end
 
 	---@generic T
+	---@generic R
 	---@param t T[]
-	---@param func fun(key: any, value: T) : boolean
-	---@return T[]
-	function array.select(t, func)
+	---@param func fun(index: integer, value: T) : R
+	---@return R[]
+	function _array.select(t, func)
 	    local copy = {}
-	    for key, value in pairs(t) do
-	        if func(key, value) then
-	            table_insert(copy, value)
-	        end
+	    for index, value in pairs(t) do
+	        table_insert(copy, func(index, value))
 	    end
 	    return copy
 	end
 
 	---@generic T
+	---@generic R
 	---@param t T[]
-	---@param func fun(key: any, value: T) : boolean
-	---@return T[]
-	function array.select_implace(t, func)
-	    for key, value in pairs(t) do
-	        if func(key, value) then
-	            t[key] = nil
-	            insert_first_nil(t, value)
-	        else
-	            t[key] = nil
+	---@param func fun(index: integer, value: T) : R
+	---@return R[]
+	function _array.select_implace(t, func)
+	    for index, value in pairs(t) do
+	        local new_value = func(index, value)
+	        t[index] = nil
+	        if new_value then
+	            insert_first_nil(t, new_value)
 	        end
 	    end
 	    return t
 	end
 
-	return array
+	return _array
 
 end
 
@@ -484,12 +529,14 @@ end
 
 __bundler__.__files__["src.utils.init"] = function()
 	---@class Freemaker.utils
+	---@field number Freemaker.utils.number
 	---@field string Freemaker.utils.string
 	---@field table Freemaker.utils.table
 	---@field array Freemaker.utils.array
 	---@field value Freemaker.utils.value
 	local utils = {}
 
+	utils.number = __bundler__.__loadFile__("src.utils.number")
 	utils.string = __bundler__.__loadFile__("src.utils.string")
 	utils.table = __bundler__.__loadFile__("src.utils.table")
 	utils.array = __bundler__.__loadFile__("src.utils.array")
@@ -571,18 +618,26 @@ __bundler__.__files__["__main__"] = function()
 
 	---@return boolean
 	function _path:is_file()
-	    return self.m_nodes[#self.m_nodes] ~= ""
+	    if self.m_nodes[#self.m_nodes] == "" then
+	        return false
+	    end
+
+	    return file_system.attributes(self:to_string(), "mode") == "file"
 	end
 
 	---@return boolean
 	function _path:is_dir()
-	    return self.m_nodes[#self.m_nodes] == ""
+	    local path = self:to_string()
+	    if self.m_nodes[#self.m_nodes] == "" then
+	        path = path:sub(0, -2)
+	    end
+
+	    return file_system.attributes(path, "mode") == "directory"
 	end
 
 	function _path:exists()
 	    local path = self:to_string()
-
-	    if self:is_dir() then
+	    if self.m_nodes[#self.m_nodes] == "" then
 	        path = path:sub(0, -2)
 	    end
 
