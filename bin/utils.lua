@@ -76,9 +76,10 @@ __bundler__.__files__["src.utils.number"] = function()
 	local round_cache = {}
 
 	---@param value number
-	---@param decimal integer
+	---@param decimal integer | nil
 	---@return integer
 	function _number.round(value, decimal)
+	    decimal = decimal or 0
 	    if decimal > 308 then
 	        error("cannot round more decimals than 308")
 	    end
@@ -587,6 +588,62 @@ __bundler__.__files__["src.utils.value"] = function()
 
 end
 
+__bundler__.__files__["src.utils.stopwatch"] = function()
+	---@class Freemaker.utils.stopwatch
+	---@field start_time number | nil
+	---@field last_lap_time number | nil
+	local _stopwatch = {}
+
+	function _stopwatch.new()
+	    return setmetatable({
+	    }, { __index = _stopwatch })
+	end
+
+	function _stopwatch.start_new()
+	    local instance = _stopwatch.new()
+	    instance:start()
+	    return instance
+	end
+
+	function _stopwatch:start()
+	    if self.start_time then
+	        return
+	    end
+
+	    self.start_time = os.clock()
+	end
+
+	---@return number elapesd_milliseconds
+	function _stopwatch:stop()
+	    if not self.start_time then
+	        return 0
+	    end
+
+	    local elapesd_time = os.clock() - self.start_time
+	    self.start_time = nil
+
+	    return elapesd_time * 1000
+	end
+
+	---@return number elapesd_milliseconds
+	function _stopwatch:lap()
+	    if not self.start_time then
+	        return 0
+	    end
+
+	    local lap_time = os.clock()
+	    self.last_lap_time = lap_time
+
+	    local previous_lap = self.last_lap_time or self.start_time
+	    local elapesd_time = lap_time - previous_lap
+
+	    return elapesd_time * 1000
+	end
+
+	return _stopwatch
+
+end
+
 __bundler__.__files__["__main__"] = function()
 	---@class Freemaker.utils
 	---@field number Freemaker.utils.number
@@ -594,6 +651,8 @@ __bundler__.__files__["__main__"] = function()
 	---@field table Freemaker.utils.table
 	---@field array Freemaker.utils.array
 	---@field value Freemaker.utils.value
+	---
+	---@field stopwatch Freemaker.utils.stopwatch
 	local utils = {}
 
 	utils.number = __bundler__.__loadFile__("src.utils.number")
@@ -601,6 +660,8 @@ __bundler__.__files__["__main__"] = function()
 	utils.table = __bundler__.__loadFile__("src.utils.table")
 	utils.array = __bundler__.__loadFile__("src.utils.array")
 	utils.value = __bundler__.__loadFile__("src.utils.value")
+
+	utils.stopwatch = __bundler__.__loadFile__("src.utils.stopwatch")
 
 	return utils
 
