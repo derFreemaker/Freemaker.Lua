@@ -23,20 +23,7 @@ function _value.default(value, default_value)
     if value == nil then
         return default_value
     end
-    return value
-end
 
----@param value number
----@param min number
----@param max number
----@return number
-function _value.clamp(value, min, max)
-    if value < min then
-        return min
-    end
-    if value > max then
-        return max
-    end
     return value
 end
 

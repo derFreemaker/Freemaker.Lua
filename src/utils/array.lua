@@ -1,4 +1,3 @@
--- caching globals for more performance
 local table_insert = table.insert
 
 ---@generic T

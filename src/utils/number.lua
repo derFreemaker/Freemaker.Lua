@@ -21,4 +21,20 @@ function _number.round(value, decimal)
     return ((value * mult + 0.5) // 1) / mult
 end
 
+---@param value number
+---@param min number
+---@param max number
+---@return number
+function _number.clamp(value, min, max)
+    if value < min then
+        return min
+    end
+
+    if value > max then
+        return max
+    end
+
+    return value
+end
+
 return _number

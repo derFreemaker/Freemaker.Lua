@@ -1625,6 +1625,22 @@ __bundler__.__files__["src.utils.number"] = function()
 	    return ((value * mult + 0.5) // 1) / mult
 	end
 
+	---@param value number
+	---@param min number
+	---@param max number
+	---@return number
+	function _number.clamp(value, min, max)
+	    if value < min then
+	        return min
+	    end
+
+	    if value > max then
+	        return max
+	    end
+
+	    return value
+	end
+
 	return _number
 
 end
@@ -1676,9 +1692,11 @@ __bundler__.__files__["src.utils.string.init"] = function()
 	---@return string | nil, integer
 	local function find_next(str, pattern, plain)
 	    local found = str:find(pattern, 0, plain or true)
+
 	    if found == nil then
 	        return nil, 0
 	    end
+
 	    return str:sub(0, found - 1), found - 1
 	end
 
@@ -1723,9 +1741,11 @@ __bundler__.__files__["src.utils.string.init"] = function()
 	    if str == nil then
 	        return true
 	    end
+
 	    if str == "" then
 	        return true
 	    end
+
 	    return false
 	end
 
@@ -1754,33 +1774,33 @@ __bundler__.__files__["src.utils.table"] = function()
 	local _table = {}
 
 	---@param t table
-		---@param copy table
-		---@param seen table<table, table>
-		---@return table
-		local function copy_table_to(t, copy, seen)
-		    if seen[t] then
-		        return seen[t]
-		    end
+	---@param copy table
+	---@param seen table<table, table>
+	---@return table
+	local function copy_table_to(t, copy, seen)
+	    if seen[t] then
+	        return seen[t]
+	    end
 
-		    seen[t] = copy
+	    seen[t] = copy
 
-		    for key, value in next, t do
-		        if type(value) == "table" then
-					copy[key] = copy_table_to(value, copy[key] or {}, seen)
-		        else
-		            copy[key] = value
-		        end
-		    end
+	    for key, value in next, t do
+	        if type(value) == "table" then
+	            copy[key] = copy_table_to(value, copy[key] or {}, seen)
+	        else
+	            copy[key] = value
+	        end
+	    end
 
-		    local t_meta = getmetatable(t)
-		    if t_meta then
-		        local copy_meta = getmetatable(copy) or {}
-		        copy_table_to(t_meta, copy_meta, seen)
-		        setmetatable(copy, copy_meta)
-		    end
+	    local t_meta = getmetatable(t)
+	    if t_meta then
+	        local copy_meta = getmetatable(copy) or {}
+	        copy_table_to(t_meta, copy_meta, seen)
+	        setmetatable(copy, copy_meta)
+	    end
 
-			return copy
-		end
+	    return copy
+	end
 
 	---@generic T
 	---@param t T
@@ -1823,6 +1843,7 @@ __bundler__.__files__["src.utils.table"] = function()
 	            return true
 	        end
 	    end
+
 	    return false
 	end
 
@@ -1833,6 +1854,7 @@ __bundler__.__files__["src.utils.table"] = function()
 	    if t[key] ~= nil then
 	        return true
 	    end
+
 	    return false
 	end
 
@@ -1840,9 +1862,11 @@ __bundler__.__files__["src.utils.table"] = function()
 	---@return integer count
 	function _table.count(t)
 	    local count = 0
+
 	    for _, _ in next, t, nil do
 	        count = count + 1
 	    end
+
 	    return count
 	end
 
@@ -1850,9 +1874,11 @@ __bundler__.__files__["src.utils.table"] = function()
 	---@return table
 	function _table.invert(t)
 	    local inverted = {}
+
 	    for key, value in pairs(t) do
 	        inverted[value] = key
 	    end
+
 	    return inverted
 	end
 
@@ -1864,12 +1890,16 @@ __bundler__.__files__["src.utils.table"] = function()
 	function _table.map(t, func)
 	    ---@type any[]
 	    local result = {}
+
 	    for index, value in ipairs(t) do
 	        result[index] = func(value)
 	    end
+
 	    return result
 	end
 
+	-- Only makes this table readonly
+	-- **NOT** the child tables
 	---@generic T
 	---@param t T
 	---@return T
@@ -1889,11 +1919,13 @@ __bundler__.__files__["src.utils.table"] = function()
 	---@return R[]
 	function _table.select(t, func)
 	    local copy = _table.copy(t)
+
 	    for key, value in pairs(copy) do
 	        if not func(key, value) then
 	            copy[key] = nil
 	        end
 	    end
+
 	    return copy
 	end
 
@@ -1908,6 +1940,7 @@ __bundler__.__files__["src.utils.table"] = function()
 	            t[key] = nil
 	        end
 	    end
+
 	    return t
 	end
 
@@ -1916,7 +1949,6 @@ __bundler__.__files__["src.utils.table"] = function()
 end
 
 __bundler__.__files__["src.utils.array"] = function()
-	-- caching globals for more performance
 	local table_insert = table.insert
 
 	---@generic T
@@ -2080,20 +2112,7 @@ __bundler__.__files__["src.utils.value"] = function()
 	    if value == nil then
 	        return default_value
 	    end
-	    return value
-	end
 
-	---@param value number
-	---@param min number
-	---@param max number
-	---@return number
-	function _value.clamp(value, min, max)
-	    if value < min then
-	        return min
-	    end
-	    if value > max then
-	        return max
-	    end
 	    return value
 	end
 

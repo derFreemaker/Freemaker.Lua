@@ -10,9 +10,11 @@ local _string = {
 ---@return string | nil, integer
 local function find_next(str, pattern, plain)
     local found = str:find(pattern, 0, plain or true)
+
     if found == nil then
         return nil, 0
     end
+
     return str:sub(0, found - 1), found - 1
 end
 
@@ -57,9 +59,11 @@ function _string.is_nil_or_empty(str)
     if str == nil then
         return true
     end
+
     if str == "" then
         return true
     end
+
     return false
 end
 
