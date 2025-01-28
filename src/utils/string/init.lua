@@ -1,5 +1,8 @@
 ---@class Freemaker.utils.string
-local _string = {}
+---@field builder Freemaker.utils.string.builder
+local _string = {
+    builder = require("src.utils.string.builder")
+}
 
 ---@param str string
 ---@param pattern string
