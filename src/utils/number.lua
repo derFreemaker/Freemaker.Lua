@@ -5,9 +5,10 @@ local _number = {}
 local round_cache = {}
 
 ---@param value number
----@param decimal integer
+---@param decimal integer | nil
 ---@return integer
 function _number.round(value, decimal)
+    decimal = decimal or 0
     if decimal > 308 then
         error("cannot round more decimals than 308")
     end
