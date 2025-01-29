@@ -1,10 +1,22 @@
+local _number = require("src.utils.number")
+
 ---@class Freemaker.utils.stopwatch
----@field start_time number | nil
----@field last_lap_time number | nil
+---@field private running boolean
+---
+---@field start_time number
+---@field end_time number
+---@field private elapesd_milliseconds integer
+---
+---@field private last_lap_time number | nil
 local _stopwatch = {}
 
 function _stopwatch.new()
     return setmetatable({
+        running = false,
+
+        start_time = 0,
+        end_time = 0,
+        elapesd_milliseconds = 0,
     }, { __index = _stopwatch })
 end
 
@@ -15,23 +27,29 @@ function _stopwatch.start_new()
 end
 
 function _stopwatch:start()
-    if self.start_time then
+    if self.running then
         return
     end
 
     self.start_time = os.clock()
+    self.running = true
 end
 
----@return number elapesd_milliseconds
 function _stopwatch:stop()
-    if not self.start_time then
-        return 0
+    if not self.running then
+        return
     end
 
-    local elapesd_time = os.clock() - self.start_time
-    self.start_time = nil
+    self.end_time = os.clock()
+    local elapesd_time = self.end_time - self.start_time
+    self.running = false
 
-    return elapesd_time * 1000
+    self.elapesd_milliseconds = _number.round(elapesd_time * 1000)
+end
+
+---@return integer
+function _stopwatch:get_elapesd_milliseconds()
+    return self.elapesd_milliseconds
 end
 
 ---@return number elapesd_milliseconds
