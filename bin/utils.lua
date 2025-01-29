@@ -601,6 +601,7 @@ __bundler__.__files__["src.utils.stopwatch"] = function()
 	---@field private last_lap_time number | nil
 	local _stopwatch = {}
 
+	---@return Freemaker.utils.stopwatch
 	function _stopwatch.new()
 	    return setmetatable({
 	        running = false,
@@ -611,6 +612,7 @@ __bundler__.__files__["src.utils.stopwatch"] = function()
 	    }, { __index = _stopwatch })
 	end
 
+	---@return Freemaker.utils.stopwatch
 	function _stopwatch.start_new()
 	    local instance = _stopwatch.new()
 	    instance:start()

@@ -10,6 +10,7 @@ local _number = require("src.utils.number")
 ---@field private last_lap_time number | nil
 local _stopwatch = {}
 
+---@return Freemaker.utils.stopwatch
 function _stopwatch.new()
     return setmetatable({
         running = false,
@@ -20,6 +21,7 @@ function _stopwatch.new()
     }, { __index = _stopwatch })
 end
 
+---@return Freemaker.utils.stopwatch
 function _stopwatch.start_new()
     local instance = _stopwatch.new()
     instance:start()
