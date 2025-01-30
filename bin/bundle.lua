@@ -2194,7 +2194,7 @@ __bundler__.__files__["src.utils.stopwatch"] = function()
 	    end
 
 	    local lap_time = os.clock()
-	    local previous_lap = self.laps[#self.laps_count] or self.start_time
+	    local previous_lap = self.laps[self.laps_count] or self.start_time
 
 	    self.laps_count = self.laps_count + 1
 	    self.laps[self.laps_count] = previous_lap
