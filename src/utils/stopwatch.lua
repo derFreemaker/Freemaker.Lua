@@ -54,7 +54,7 @@ function _stopwatch:get_elapesd_milliseconds()
     return self.elapesd_milliseconds
 end
 
----@return number elapesd_milliseconds
+---@return integer elapesd_milliseconds
 function _stopwatch:lap()
     if not self.start_time then
         return 0
@@ -66,7 +66,7 @@ function _stopwatch:lap()
     local previous_lap = self.last_lap_time or self.start_time
     local elapesd_time = lap_time - previous_lap
 
-    return elapesd_time * 1000
+    return _number.round(elapesd_time * 1000)
 end
 
 return _stopwatch
