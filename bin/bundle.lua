@@ -1676,6 +1676,10 @@ __bundler__.__files__["src.utils.string.builder"] = function()
 	    return table_concat(self.m_cache)
 	end
 
+	function _string_builder:clear()
+	    self.m_cache = {}
+	end
+
 	return _string_builder
 
 end
